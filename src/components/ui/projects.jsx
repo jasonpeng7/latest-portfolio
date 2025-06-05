@@ -20,7 +20,7 @@ export default function ProjectShowcase() {
       ],
       landingPage: "https://roomu.aggieworks.org/",
       description:
-        "RoomU is a mobile app designed to help students find roommates and housing options before lease signing season. It features a user-friendly interface with real-time chat, profile matching, seamless onbaording flow, and a responsive design optimized for mobile devices.",
+        "RoomU is a mobile app designed to help students find roommates and housing options before lease signing season. It features a user-friendly interface with real-time chat, profile matching, seamless onboarding flow, and a responsive design optimized for mobile devices.",
       url: "https://roomu.aggieworks.org/",
     },
     {
@@ -100,9 +100,7 @@ export default function ProjectShowcase() {
 
   return (
     <div className="relative w-full ">
-      {/* Carousel container */}
       <div className="relative">
-        {/* Left button */}
         <button
           onClick={scrollLeft}
           className="absolute left-0 top-1/2 transform -translate-y-1/2 z-20 bg-white bg-opacity-70 p-2 rounded-full shadow-md hover:bg-opacity-100"
@@ -123,7 +121,6 @@ export default function ProjectShowcase() {
           </svg>
         </button>
 
-        {/* Right button */}
         <button
           onClick={scrollRight}
           className="absolute right-0 top-1/2 transform -translate-y-1/2 z-20 bg-white bg-opacity-70 p-2 rounded-full shadow-md hover:bg-opacity-100"
@@ -177,11 +174,9 @@ export default function ProjectShowcase() {
         </div>
       </div>
 
-      {/* Modal overlay */}
       {selectedProject && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4">
-          <div className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-lg shadow-xl relative">
-            {/* Close button */}
+          <div className="bg-white w-full max-w-4xl max-h-[70vh] overflow-y-auto rounded-lg shadow-xl relative">
             <button
               onClick={() => setSelectedProject(null)}
               className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
@@ -202,17 +197,13 @@ export default function ProjectShowcase() {
               </svg>
             </button>
 
-            {/* Desktop frame mockup & content */}
             <div className="pt-6 px-6 pb-8">
-              {/* Desktop frame */}
               <div className="w-full bg-gray-200 border border-gray-300 rounded-t-md overflow-hidden">
-                {/* Window controls */}
                 <div className="flex items-center space-x-2 bg-gray-300 px-3 py-1">
                   <span className="w-3 h-3 bg-red-400 rounded-full" />
                   <span className="w-3 h-3 bg-yellow-400 rounded-full" />
                   <span className="w-3 h-3 bg-green-400 rounded-full" />
                 </div>
-                {/* "Screen" area: iframe if URL, img if image */}
                 {/\.(png|jpe?g|gif|bmp|webp)$/i.test(
                   selectedProject.landingPage
                 ) ? (
@@ -231,9 +222,8 @@ export default function ProjectShowcase() {
                 )}
               </div>
 
-              {/* Description */}
               <div className="mt-6 text-gray-800 text-justify">
-                <p className="text-lg text-gray-800 break-words">
+                <p className="text-md md:text-lg text-gray-800 break-words">
                   <span className="text-5xl font-bold float-left mr-2">
                     {selectedProject.description.charAt(0)}
                   </span>
@@ -241,7 +231,6 @@ export default function ProjectShowcase() {
                 </p>
               </div>
 
-              {/* Tags list */}
               <div className="mt-4 flex flex-wrap gap-2">
                 {selectedProject.tags.map((tag, idx) => (
                   <span
@@ -253,7 +242,6 @@ export default function ProjectShowcase() {
                 ))}
               </div>
 
-              {/* Visit website footer */}
               <div className="mt-8 border-t border-gray-200 pt-4 text-center">
                 <a
                   href={selectedProject.url}
@@ -269,7 +257,6 @@ export default function ProjectShowcase() {
         </div>
       )}
 
-      {/* Hide scrollbar for all browsers */}
       <style jsx>{`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;

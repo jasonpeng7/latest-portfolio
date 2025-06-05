@@ -18,7 +18,7 @@ export default function PersonalInfoModal({ visible, onClose }) {
         justify-start items-center 
         rounded-2xl shadow-2xl 
         w-full max-w-[1000px] 
-        max-h-[90vh]
+        max-h-[80vh] md:max-h-[90vh]
       `
     : "w-0 h-0 overflow-hidden";
 
