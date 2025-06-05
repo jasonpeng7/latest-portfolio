@@ -14,7 +14,7 @@ import VerticalCarouselPage from "@/components/ui/vertCarousel";
 import ExperienceList from "@/components/ui/experience-card";
 import ProjectShowcase from "@/components/ui/projects";
 import LiquidSideNav from "@/components/features/menuCMPNT";
-import PhotoblogPage from "@/components/features/photoblogCMPNT";
+import HorizontalCarouselPage from "@/components/ui/horzCarousel";
 
 import { motion } from "framer-motion";
 import { slideInLeft, slideInRight, liftUp } from "@/utils/motionVariants";
@@ -96,7 +96,11 @@ function App() {
                   <div className="w-full flex justify-center self-center mb-[20px]">
                     <TypeWriter />
                   </div>
-                  <div className="">
+                  <div className="block lg:hidden">
+                    <HorizontalCarouselPage />
+                  </div>
+
+                  <div className="hidden lg:block">
                     <VerticalCarouselPage />
                   </div>
                 </article>
