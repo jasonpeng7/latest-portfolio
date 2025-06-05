@@ -31,8 +31,10 @@ export default function VerticalCarousel({ items, speed = 10 }) {
 
   return (
     <div className="w-full max-w-[550px] flex justify-end">
-
-      <div className={`${styles.carouselResponsiveContainer} md:max-h-64 ml-auto`}>
+      {/* Film-strip container with sprocket holes */}
+      <div
+        className={`${styles.carouselResponsiveContainer} md:max-h-64 ml-auto`}
+      >
         <div
           ref={scrollRef}
           className={styles.scrollContainer}
@@ -43,7 +45,14 @@ export default function VerticalCarousel({ items, speed = 10 }) {
           {[...items, ...items].map((item, idx) => (
             <div
               key={idx}
-              className="w-60 h-40 flex-shrink-0 mx-auto rounded-md overflow-hidden"
+              className="
+                w-60 h-40        
+                flex-shrink-0 
+                mx-auto 
+                overflow-hidden
+                border-b-2 border-[#475569]
+                border-t-2 border-[#475569]
+              "
             >
               {item.type === "video" ? (
                 <video
@@ -51,13 +60,13 @@ export default function VerticalCarousel({ items, speed = 10 }) {
                   autoPlay
                   muted
                   loop
-                  className="w-full h-full object-cover rounded-lg"
+                  className="w-full h-full object-cover"
                 />
               ) : (
                 <img
                   src={item.src}
                   alt=""
-                  className="w-full h-full object-cover rounded-lg"
+                  className="w-full h-full object-cover"
                 />
               )}
             </div>
