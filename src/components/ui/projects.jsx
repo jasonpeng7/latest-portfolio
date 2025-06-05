@@ -34,7 +34,6 @@ export default function ProjectShowcase() {
         "Clerk Auth",
         "MySQL",
         "Node.js",
-        "Database Management",
       ],
       landingPage: "/wishr.png",
       description:
