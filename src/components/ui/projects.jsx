@@ -157,14 +157,14 @@ export default function ProjectShowcase() {
               <div className="border bg-extreme-light-blue2 border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
                 <img src={proj.thumbnail} alt={proj.title} className="" />
                 <div className="p-3 bg-white min-h-[140px]">
-                  <div className="font-semibold text-lg text-dark_navy mb-2">
+                  <div className="font-semibold text-lg text-dark-navy mb-2">
                     {proj.title}
                   </div>
                   <div className="flex flex-wrap gap-1">
                     {proj.tags.map((tag, idx) => (
                       <span
                         key={idx}
-                        className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
+                        className="bg-gray-100 text-dark-navy text-xs px-2 py-1 rounded-full"
                       >
                         #{tag.replace(/\s+/g, "")}
                       </span>
