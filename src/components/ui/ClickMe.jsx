@@ -9,16 +9,16 @@ export default function ClickMeBounce() {
       animate={{ y: [0, -10, 0] }}
       transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
     >
-      <div className="red-hat-bold">L</div>
-      <div className="red-hat-bold">E</div>
-      <div className="red-hat-bold">A</div>
-      <div className="red-hat-bold">R</div>
-      <div className="red-hat-bold">N</div>
-      <div className="red-hat-bold">M</div>
-      <div className="red-hat-bold">O</div>
-      <div className="red-hat-bold">R</div>
-      <div className="red-hat-bold">E</div>
-      <div className="red-hat-bold">
+      <div className="red-hat-bold text-dark-navy">L</div>
+      <div className="red-hat-bold text-dark-navy">E</div>
+      <div className="red-hat-bold text-dark-navy">A</div>
+      <div className="red-hat-bold text-dark-navy">R</div>
+      <div className="red-hat-bold text-dark-navy">N</div>
+      <div className="red-hat-bold text-dark-navy">M</div>
+      <div className="red-hat-bold text-dark-navy">O</div>
+      <div className="red-hat-bold text-dark-navy">R</div>
+      <div className="red-hat-bold text-dark-navy">E</div>
+      <div className="red-hat-bold text-dark-navy">
         <FiArrowRight />
       </div>
     </motion.div>
