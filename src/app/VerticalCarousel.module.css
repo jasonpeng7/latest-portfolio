@@ -1,0 +1,99 @@
+/* Step 1: Define both keyframes */
+@keyframes verticalScroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes horizontalScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* Base styles for the scrolling container */
+.scrollContainer {
+  display: flex;
+  gap: 1rem;
+  width: max-content; 
+  flex-direction: column;
+  animation-name: verticalScroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+/* Fade-out “mask” on top/bottom for desktop */
+.carouselResponsiveContainer {
+  position: relative;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 5%,
+    black 85%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 5%,
+    black 85%,
+    transparent 100%
+  );
+}
+
+/* switch to a horizontal carousel */
+@media (max-width: 1024px) {
+  .scrollContainer {
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
+    animation-name: horizontalScroll;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    max-width: 600px;
+      animation-duration: 5s!important; 
+
+  }
+
+  @media (max-width: 600px) {
+  .scrollContainer {
+    max-width: 500px;
+  }
+  }
+
+    @media (max-width: 550px) {
+  .scrollContainer {
+    max-width: 400px;
+  }
+  }
+
+      @media (max-width: 450px) {
+  .scrollContainer {
+    max-width: 300px;
+  }
+  }
+
+  .carouselResponsiveContainer {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 5%,
+      black 85%,
+      transparent 100%
+    );
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 5%,
+      black 85%,
+      transparent 100%
+    );
+  }
+}

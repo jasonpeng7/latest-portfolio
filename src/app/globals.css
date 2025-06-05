@@ -1,0 +1,182 @@
+
+@config "../../tailwind.config.cjs";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+.red-hat {
+  font-family: "Red Hat Display", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.red-hat-bold {
+  font-family: "Red Hat Display", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.red-hat-extrabold {
+  font-family: "Red Hat Display", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.FRL-regular {
+  font-family: "Frank Ruhl Libre", serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+  color:rgb(0, 21, 67);
+}
+
+.FRL-bold {
+  font-family: "Frank Ruhl Libre", serif;
+  font-optical-sizing: auto;
+  font-weight: 450;
+  font-style: normal;
+  color:rgb(0, 21, 67);
+}
+
+.raleway_regular {
+  font-family: "Raleway", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.lato-thin {
+  font-family: "Lato", sans-serif;
+  font-weight: 100;
+  font-style: normal;
+}
+
+.lato-light {
+  font-family: "Lato", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.lato-regular {
+  font-family: "Lato", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.lato-bold {
+  font-family: "Lato", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.lato-black {
+  font-family: "Lato", sans-serif;
+  font-weight: 900;
+  font-style: normal;
+}
+
+.lato-thin-italic {
+  font-family: "Lato", sans-serif;
+  font-weight: 100;
+  font-style: italic;
+}
+
+.lato-light-italic {
+  font-family: "Lato", sans-serif;
+  font-weight: 300;
+  font-style: italic;
+}
+
+.lato-regular-italic {
+  font-family: "Lato", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.lato-bold-italic {
+  font-family: "Lato", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.lato-black-italic {
+  font-family: "Lato", sans-serif;
+  font-weight: 900;
+  font-style: italic;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  background-color:rgb(249, 252, 255);
+}
+
+/* outsideFrame{
+  background-color: rgb(249, 252, 255);
+} */
+
+framercontainer {
+  /* background-color: rgba(185, 195, 221, 0.322); */
+  scrollbar-width: none;
+}
+
+framercontainer::-webkit-scrollbar {
+  display: none;
+}
+
+
+
+.content-container::-webkit-scrollbar {
+  display: none;
+}
+
+.navbar {
+  padding: 1rem 2rem;
+  z-index: 10;
+  position: fixed;
+  top: 1vh;
+}
+
+.fade-out {
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+.clip-path-polygon {
+  clip-path: polygon(
+        0 0,           /* Top-left corner */
+        100% 0,        /* Top-right corner */
+        100% 100%,     /* Bottom-right corner */
+        0 100%,        /* Bottom-left corner */
+        0 53%,         /* Start creating the clipped section */
+        23.5% 53%,       /* Adjust the right side of the clipped section */
+        23.5% 0,         /* Move vertically up */
+        0 0            /* Close the path */
+    );
+
+}
+
+@theme inline {
+  --animate-scroll: scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite;
+ 
+  @keyframes scroll {
+    to {
+      transform: translate(calc(-50% - 0.5rem));
+    }
+  }
+}
+
+/* Hide scrollbar for WebKit (Chrome, Safari) */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hide scrollbar for IE, Edge */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
