@@ -12,6 +12,13 @@
   font-style: normal;
 }
 
+.red-hat-normal {
+  font-family: "Red Hat Display", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 350;
+  font-style: normal;
+}
+
 .red-hat-bold {
   font-family: "Red Hat Display", sans-serif;
   font-optical-sizing: auto;
