@@ -1,99 +1,64 @@
-/* Step 1: Define both keyframes */
-@keyframes verticalScroll {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(-50%);
-  }
+/* VerticalCarousel.module.css */
+
+/* 1) Container that holds the scrolling frames, with a black “film” background */
+.carouselResponsiveContainer {
+  position: relative;
+  overflow: hidden;
+  background: #000;           /* black strip */
 }
 
-@keyframes horizontalScroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+/* 2) Top sprocket holes */
+.carouselResponsiveContainer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;               /* height of hole row */
+  /* radial-gradient makes repeating circles; transparent center, black outside */
+  background-image: radial-gradient(
+    circle at center,
+    transparent 0 5px,
+    #475569 5px 8px
+  );
+  background-size: 20px 20px; /* holes every 30px */
+  z-index: 10;
 }
 
-/* Base styles for the scrolling container */
+/* 3) Bottom sprocket holes */
+.carouselResponsiveContainer::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  background-image: radial-gradient(
+    circle at center,
+    transparent 0 5px,
+    #475569 5px 8px
+  );
+  background-size: 20px 20px;
+  z-index: 10;
+}
+
+/* 4) Existing scrollContainer rules (unchanged), if any */
 .scrollContainer {
   display: flex;
   gap: 1rem;
-  width: max-content; 
+  width: max-content;
   flex-direction: column;
   animation-name: verticalScroll;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
 
-/* Fade-out “mask” on top/bottom for desktop */
-.carouselResponsiveContainer {
-  position: relative;
-  overflow: hidden;
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    black 5%,
-    black 85%,
-    transparent 100%
-  );
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    black 5%,
-    black 85%,
-    transparent 100%
-  );
-}
-
-/* switch to a horizontal carousel */
-@media (max-width: 1024px) {
-  .scrollContainer {
-    flex-direction: row;
-    align-items: center;
-    gap: 1.5rem;
-    animation-name: horizontalScroll;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    max-width: 600px;
-      animation-duration: 5s!important; 
-
+/* 5) Keyframes (unchanged) */
+@keyframes verticalScroll {
+  0% {
+    transform: translateY(0);
   }
-
-  @media (max-width: 600px) {
-  .scrollContainer {
-    max-width: 500px;
-  }
-  }
-
-    @media (max-width: 550px) {
-  .scrollContainer {
-    max-width: 400px;
-  }
-  }
-
-      @media (max-width: 450px) {
-  .scrollContainer {
-    max-width: 300px;
-  }
-  }
-
-  .carouselResponsiveContainer {
-    mask-image: linear-gradient(
-      to right,
-      transparent 0%,
-      black 5%,
-      black 85%,
-      transparent 100%
-    );
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent 0%,
-      black 5%,
-      black 85%,
-      transparent 100%
-    );
+  100% {
+    transform: translateY(-50%);
   }
 }
