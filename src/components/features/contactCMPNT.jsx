@@ -66,9 +66,9 @@ export default function TerminalContact() {
 function TerminalHeader() {
   return (
     <div className="sticky top-0 w-full p-3 bg-dark-navy flex items-center gap-1">
-      <div className="w-3 h-3 rounded-full bg-red-500" />
-      <div className="w-3 h-3 rounded-full bg-yellow-500" />
-      <div className="w-3 h-3 rounded-full bg-green-500" />
+      <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-500" />
+      <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-yellow-500" />
+      <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-green-500" />
       <span className="absolute left-1/2 -translate-x-1/2 text-sm text-slated-200 font-semibold">
         jasonpeng@myemail.dev
       </span>
