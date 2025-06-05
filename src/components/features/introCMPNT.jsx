@@ -4,7 +4,6 @@ import PersonalInfoModal from "../ui/PrsnlModal";
 import { motion, useAnimation } from "framer-motion";
 import ClickMeBounce from "../ui/ClickMe";
 import Image from "next/image";
-import Head from "next/head";
 
 export function Intro() {
   const [showModal, setShowModal] = useState(false);
