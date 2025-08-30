@@ -89,7 +89,9 @@ export const InfiniteMovingCards = ({
           >
             <img
               src={item.svgPath}
-              alt={`Card ${idx + 1}`}
+              alt={`${
+                item.svgPath.split("/").pop().split(".")[0]
+              } technology logo`}
               className="w-full h-full object-contain"
             />
           </li>

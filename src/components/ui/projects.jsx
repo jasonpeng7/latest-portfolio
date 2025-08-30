@@ -151,7 +151,13 @@ export default function ProjectShowcase() {
               onClick={() => setSelectedProject(proj)}
             >
               <div className="border bg-extreme-light-blue2 border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
-                <img src={proj.thumbnail} alt={proj.title} className="" />
+                <img
+                  src={proj.thumbnail}
+                  alt={`${
+                    proj.title
+                  } project preview - ${proj.description.substring(0, 50)}...`}
+                  className=""
+                />
                 <div className="p-3 bg-white min-h-[140px]">
                   <div className="font-semibold text-lg text-dark-navy mb-2">
                     {proj.title}
@@ -208,7 +214,7 @@ export default function ProjectShowcase() {
                 ) ? (
                   <img
                     src={selectedProject.landingPage}
-                    alt={`${selectedProject.title} snapshot`}
+                    alt={`${selectedProject.title} project screenshot`}
                     className="w-full object-contain"
                   />
                 ) : (
