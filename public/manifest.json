@@ -1,0 +1,27 @@
+{
+  "name": "Jason Peng - Software Engineer Portfolio",
+  "short_name": "Jason Peng",
+  "description": "Jason Peng's portfolio, a software engineer specializing in web development and full-stack applications.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f9fcff",
+  "theme_color": "#001543",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/jason.jpg",
+      "sizes": "400x400",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities", "portfolio"],
+  "lang": "en",
+  "dir": "ltr"
+}
