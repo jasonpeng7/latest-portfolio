@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Intro } from "@/components/features/introCMPNT";
+import { FeaturedProjects } from "@/components/features/featuredProjectsCMPNT";
 import { InfiniteMovingCardsDemo } from "@/components/ui/movingcardsCMPNT";
 import LoadingOverlay from "@/components/features/loadscreenCMPNT";
 import TerminalContact from "@/components/features/contactCMPNT";
@@ -10,11 +11,9 @@ import { ThemeProvider } from "@/components/ui/themecontext";
 import { FramerContainer } from "@/components/features/framercontainerCMPNT";
 import Footer from "@/components/features/footerCMPNT";
 import CustomTag from "@/components/ui/header-tag";
-import VerticalCarouselPage from "@/components/ui/vertCarousel";
 import ExperienceList from "@/components/ui/experience-card";
 import ProjectShowcase from "@/components/ui/projects";
 import LiquidSideNav from "@/components/features/menuCMPNT";
-import HorizontalCarouselPage from "@/components/ui/horzCarousel";
 
 import { motion } from "framer-motion";
 import { slideInLeft, slideInRight, liftUp } from "@/utils/motionVariants";
@@ -50,7 +49,7 @@ function App() {
                 setIsOpen={setIsOpen}
                 scrollToTop={scrollToTop}
                 scrollToSection={scrollToSection}
-                refs={{ homeRef, contactRef, bgRef, abtmeRef, projectRef }}
+                refs={{ homeRef }}
               />
             </div>
             <main className="w-full">
@@ -80,6 +79,21 @@ function App() {
                 <InfiniteMovingCardsDemo />
               </motion.section>
 
+              {/* Featured Projects */}
+              <motion.section
+                className="mb-[50px] md:mb-[100px] mx-[15px] xl:mx-[0px] space-y-[30px]"
+                variants={slideInRight}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.7 }}
+              >
+                <article className="self-start">
+                  <CustomTag header={"Most Recent Projects"} />
+                </article>
+                <FeaturedProjects />
+              </motion.section>
+
               {/* About Me */}
               <motion.section
                 className="mb-[50px] md:mb-[100px] flex flex-col justify-center items-center space-y-[30px] mx-[15px] xl:mx-[0px]"
@@ -95,13 +109,6 @@ function App() {
                 <article className="flex flex-col lg:flex-row justify-center items-center space-y-5 md:space-y-0 w-full md:space-x-5 max-w-[1200px] mx-auto">
                   <div className="w-full flex justify-center self-center mb-[20px]">
                     <TypeWriter />
-                  </div>
-                  <div className="block lg:hidden">
-                    <HorizontalCarouselPage />
-                  </div>
-
-                  <div className="hidden lg:block">
-                    <VerticalCarouselPage />
                   </div>
                 </article>
               </motion.section>
