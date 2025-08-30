@@ -10,8 +10,13 @@ const LiquidSideNav = ({ scrollToTop }) => {
               className="w-[75px]"
               onClick={scrollToTop}
               whileTap={{ scale: 0.7 }}
+              aria-label="Return to top of page"
             >
-              <img src="/logo.svg" alt="JP Logo" className="" />
+              <img
+                src="/logo.svg"
+                alt="Jason Peng Portfolio Logo - Click to return to top"
+                className=""
+              />
             </motion.button>
           </div>
         </div>
