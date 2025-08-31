@@ -22,7 +22,7 @@ export function FeaturedProjects() {
     {
       id: 3,
       title: "Atharva's Portfolio",
-      tagline: "UC Davis dining menu app",
+      tagline: "Personal portfolio for Atharva's professional accomplishments",
       thumbnail: "/akwebsite.png",
       tech: ["Next.js", "TypeScript", "Vercel"],
       url: "https://atharvapk.com/",
