@@ -10,7 +10,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         {/* Favicon (optional) */}
-        <link rel="icon" href="/logo.svg" />
+        <link rel="icon" href="/logo.png" />
         <link rel="manifest" href="/manifest.json" />
 
         <link
