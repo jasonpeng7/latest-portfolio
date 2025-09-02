@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Jason Peng | Software Engineer Portfolio",
+  title: "Jason Peng",
   description:
     "Official portfolio of Jason Peng, a software engineer specializing in web development and full-stack applications.",
   keywords:
@@ -11,7 +11,7 @@ export const metadata = {
   publisher: "Jason Peng",
   robots: "index, follow",
   openGraph: {
-    title: "Jason Peng | Software Engineer Portfolio",
+    title: "Jason Peng",
     description:
       "Official portfolio of Jason Peng, a software engineer specializing in web development and full-stack applications.",
     url: "https://jasonpe.com",
