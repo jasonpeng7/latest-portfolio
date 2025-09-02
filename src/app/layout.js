@@ -1,22 +1,53 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Jason Peng",
-  description: "My portfolio",
+  title: "Jason Peng | Software Engineer Portfolio",
+  description:
+    "Official portfolio of Jason Peng, a software engineer specializing in web development and full-stack applications.",
+  keywords:
+    "Jason Peng, Software Engineer, UC Davis, Web Developer, Full Stack Developer, Portfolio, React, Next.js, JavaScript, TypeScript",
+  authors: [{ name: "Jason Peng" }],
+  creator: "Jason Peng",
+  publisher: "Jason Peng",
+  robots: "index, follow",
+  openGraph: {
+    title: "Jason Peng | Software Engineer Portfolio",
+    description:
+      "Official portfolio of Jason Peng, a software engineer specializing in web development and full-stack applications.",
+    url: "https://jasonpe.com",
+    siteName: "Jason Peng Portfolio",
+    images: [
+      {
+        url: "/jason.jpg",
+        width: 400,
+        height: 400,
+        alt: "Jason Peng, Software Engineer",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Jason Peng | Software Engineer Portfolio",
+    description:
+      "Official portfolio of Jason Peng, a software engineer specializing in web development and full-stack applications",
+    images: ["/jason.jpg"],
+  },
+  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* Favicon (optional) */}
-        <link rel="icon" href="/logo.png" />
+        {/* Favicon */}
+        <link rel="icon" href="/logo.svg" />
+        <link rel="apple-touch-icon" href="/logo.svg" />
         <link rel="manifest" href="/manifest.json" />
 
-        <link
-          href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
-          rel="stylesheet"
-        />
+        {/* Canonical URL - Use non-www version */}
+        <link rel="canonical" href="https://jasonpe.com" />
 
         <link
           href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
@@ -88,7 +119,7 @@ export default function RootLayout({ children }) {
               name: "Jason Peng Portfolio",
               url: "https://jasonpe.com",
               description:
-                "Official portfolio of Jason Peng, a software engineer specializing in web development, full-stack applications, and creative problem-solving.",
+                "Official portfolio of Jason Peng, a software engineer specializing in web development and full-stack applications.",
               author: {
                 "@type": "Person",
                 name: "Jason Peng",
