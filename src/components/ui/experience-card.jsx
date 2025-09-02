@@ -8,7 +8,15 @@ export default function ExperienceList() {
       title: "Software Engineer",
       startDate: "September 2024",
       description:
-        "Worked on internal tools, mobile development, and web applications.",
+        "Worked on internal tools, mobile app development, and web applications for UC Davis students.",
+    },
+    {
+      logoSrc: "/jasewebdev.png",
+      companyName: "Web Developer",
+      title: "Founder",
+      startDate: "August 2023",
+      description:
+        "Designed web applications for small businesses. Core technologies used: Typescript, Bun/Hono, Drizzle, PostgresSQL, Docker, and Cloudflare ",
     },
     {
       logoSrc:
@@ -17,15 +25,7 @@ export default function ExperienceList() {
       title: "Product Developer",
       startDate: "September 2024",
       description:
-        "Built software products for clients. Industry standard technologies like React, Node.js, and Docker.",
-    },
-    {
-      logoSrc: "/jasewebdev.png",
-      companyName: "Indepedent Web Dev",
-      title: "Founding Engineer",
-      startDate: "August 2023",
-      description:
-        "Designed web applications for small businesses. Core technologies used: AWS, MongoDB, and Next.js ",
+        "Built software products for clients. Industry standard technologies like React, Node.js, Docker, and Supabase.",
     },
   ];
 
