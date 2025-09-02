@@ -1,4 +1,3 @@
-// components/TerminalContact.jsx
 "use client";
 
 import { motion } from "framer-motion";
@@ -7,29 +6,13 @@ import { Fragment, useEffect, useRef, useState } from "react";
 
 const QUESTIONS = [
   {
-    key: "email",
-    text: "To start, could you give me ",
-    postfix: "your email?",
-    complete: false,
-    value: "",
-  },
-  {
-    key: "name",
-    text: "Thanks! And what's ",
-    postfix: "your name?",
-    complete: false,
-    value: "",
-  },
-  {
-    key: "description",
-    text: "Perfect, and ",
-    postfix: "your message?",
+    key: "message",
+    text: "Feel free to ",
+    postfix: "tell me anything!",
     complete: false,
     value: "",
   },
 ];
-
-const API_URL = "http://localhost:3000";
 
 export default function TerminalContact() {
   const containerRef = useRef(null);
@@ -164,77 +147,61 @@ function CurrentQuestion({ curQuestion }) {
 
 function Summary({ questions, setQuestions }) {
   const [complete, setComplete] = useState(false);
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleReset = () => {
     setQuestions((prev) =>
       prev.map((q) => ({ ...q, value: "", complete: false }))
     );
-    setError("");
     setComplete(false);
   };
 
-  const handleSend = async () => {
-    setIsLoading(true);
-    setError("");
+  const handleSend = () => {
+    const message = questions.find((q) => q.key === "message")?.value || "";
 
-    try {
-      const formData = questions.reduce(
-        (acc, q) => ({ ...acc, [q.key]: q.value }),
-        {}
-      );
+    // create email with user content
+    const subject = encodeURIComponent("Portfolio Contact - Jason Peng");
+    const body = encodeURIComponent(`${message}
 
-      const response = await fetch(`${API_URL}/api/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+Best regards,
+[Your name]`);
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Failed to send");
+    // open default mail client
+    const mailtoLink = `mailto:jiapeng@ucdavis.edu?subject=${subject}&body=${body}`;
+    window.open(mailtoLink, "_blank");
 
-      setComplete(true);
-    } catch (err) {
-      setError(err.message || "Failed to send message. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    setComplete(true);
   };
 
   return (
     <>
-      <p>Awesome! Here’s what we’ve got:</p>
+      <p>Awesome! Here&apos;s what I&apos;ve got:</p>
       {questions.map((q) => (
         <p key={q.key}>
           <span className="text-blue-300">{q.key}:</span> {q.value}
         </p>
       ))}
-      <p>Look good?</p>
-      {error && <p className="text-red-500 mt-2">{error}</p>}
+      <p>Ready to send?</p>
 
       {complete ? (
         <p className="text-emerald-300 flex items-center gap-2">
           <FiCheckCircle />
-          <span>Sent! I’ll get back to you ASAP 😎</span>
+          <span>
+            Opened your client for you ;) I&apos;ll get back to you ASAP 😎
+          </span>
         </p>
       ) : (
         <div className="flex gap-2 mt-2">
           <button
             onClick={handleReset}
             className="px-3 py-1 text-base rounded bg-slated-100 text-black hover:opacity-90 transition-opacity"
-            disabled={isLoading}
           >
             Restart
           </button>
           <button
             onClick={handleSend}
-            className={`px-3 py-1 text-base rounded text-white hover:opacity-90 transition-opacity ${
-              isLoading ? "bg-indigo-400" : "bg-indigo-500"
-            }`}
-            disabled={isLoading}
+            className="px-3 py-1 text-base rounded text-white bg-indigo-500 hover:opacity-90 transition-opacity"
           >
-            {isLoading ? "Sending..." : "Send it!"}
+            Send Email
           </button>
         </div>
       )}
@@ -290,7 +257,7 @@ function CurLine({
       <p>
         <span className="text-emerald-400">➜</span>{" "}
         <span className="text-cyan-300">~</span>{" "}
-        {command && <span className="opacity-50">Enter {command}: </span>}
+        {command && <span className="opacity-50">Enter message: </span>}
         {text}
         {focused && (
           <motion.span
