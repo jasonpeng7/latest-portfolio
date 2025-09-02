@@ -21,6 +21,8 @@ export default function ProjectShowcase() {
       landingPage: "https://roomu.aggieworks.org/",
       description:
         "RoomU is a mobile app designed to help students find roommates and housing options before lease signing season. It features a user-friendly interface with real-time chat, profile matching, seamless onboarding flow, and a responsive design optimized for mobile devices.",
+      contribution:
+        "I worked on building multiple frontend components for the account settings page, linking it to the backend API endpoints. I also led containerization of backend by setting up docker container with appropriate configurations and image. ",
       url: "https://roomu.aggieworks.org/",
     },
     {
@@ -38,6 +40,8 @@ export default function ProjectShowcase() {
       landingPage: "/wishr.png",
       description:
         "Wishr is a full-stack web application that allows users to create, share, and manage wishlists. It features user authentication and heavy database interactions, providing an efficient platform for wishlist management.",
+      contribution:
+        "I created this website from idea to deployment, this project was very database heavy. I set up many API endpoints and calls for database interactions. I also used Supabase with Postgres and imported Clerk API for oAuth.",
       url: "https://www.wishr.tech/",
     },
     {
@@ -55,6 +59,8 @@ export default function ProjectShowcase() {
       landingPage: "/aggiemenulanding.png",
       description:
         "AggieMenus is a progressive web app that provides up to date dining hall menus for UC Davis students. It features both food trucks and dining halls on campus, dietary filters, and a favorites page. ",
+      contribution:
+        "I started off working on refactoring the whole frontend, but I later transitioned to web scraping official UC Davis dining menus using Selenium and BeautifulSoup. ",
       url: "https://www.aggiemenus.org/menu/",
     },
     {
@@ -65,6 +71,8 @@ export default function ProjectShowcase() {
       landingPage: "https://pinpoint-revamped.vercel.app/",
       description:
         "Pinpoint is a web application that centralizes lost and found items for UC Davis students. It features a user-friendly interface with a clear onboard flow, user-friendly dashboard, item search functionality, and a item-matching system.",
+      contribution:
+        "I created a simple search functionality and item matching system using exact match filtering, I also created the onboarding flow of the website for new users. ",
       url: "https://pinpoint-revamped.vercel.app/",
     },
     {
@@ -234,6 +242,16 @@ export default function ProjectShowcase() {
                   </span>
                   {selectedProject.description.slice(1)}
                 </p>
+                {selectedProject.contribution && (
+                  <div className="mt-2 p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+                    <h4 className="text-sm font-semibold text-blue-800 mb-2 uppercase tracking-wide">
+                      My Contribution
+                    </h4>
+                    <p className="text-sm text-blue-700 leading-relaxed">
+                      {selectedProject.contribution}
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
