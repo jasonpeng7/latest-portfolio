@@ -95,7 +95,7 @@ function App() {
               </motion.section>
 
               {/* About Me */}
-              <motion.section
+              {/* <motion.section
                 className="mb-[50px] md:mb-[100px] flex flex-col justify-center items-center space-y-[30px] mx-[15px] xl:mx-[0px]"
                 variants={slideInRight}
                 initial="hidden"
@@ -105,13 +105,12 @@ function App() {
                 <article ref={abtmeRef} className="self-start">
                   <CustomTag header={"About me"} />
                 </article>
-                {/*  */}
                 <article className="flex flex-col lg:flex-row justify-center items-center space-y-5 md:space-y-0 w-full md:space-x-5 max-w-[1200px] mx-auto">
                   <div className="w-full flex justify-center self-center mb-[20px]">
                     <TypeWriter />
                   </div>
                 </article>
-              </motion.section>
+              </motion.section> */}
 
               {/* Experience */}
               <motion.section
