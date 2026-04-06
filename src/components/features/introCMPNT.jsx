@@ -19,7 +19,8 @@ export function Intro() {
           computer science student in love with building impactful software. My
           work mainly focuses on{" "}
           <span className="font-bold">web development</span> from design and
-          coding to <span className="font-bold">DevOps</span>.
+          coding,<span className="font-bold">mobile development</span>, and{" "}
+          <span className="font-bold">backend systems</span>.
         </p>
         <div className="flex flex-row items-center justify-center lg:justify-start space-x-4 mb-4 w-full">
           <button>

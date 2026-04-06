@@ -1,98 +1,106 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { ProjectExpandModal } from "../ui/project-modal";
 
 export function FeaturedProjects() {
-  const recentProjects = [
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [originRect, setOriginRect] = useState(null);
+
+  const featuredProjects = [
     {
       id: 1,
-      title: "Peng Flooring",
-      tagline: "B2B Platform for flooring and stair remodeling",
-      thumbnail: "/pngfloorwebsite.png",
-      tech: ["Bun", "TypeScript", "Cloudflare", "oAuth"],
-      url: "https://www.pengfloor.com/",
+      title: "RoomU",
+      tagline: "Mobile app for finding roommates and housing options",
+      thumbnail: "/roomu-intro.png",
+      tech: ["React Native", "iOS", "Docker", "Hono"],
+      url: "https://roomu.aggieworks.org/",
+      modalImage: "/roomu-pufo-modal.png",
+      gallery: [
+        "/roomu-gallery-onboarding.png",
+        "/roomu-gallery-chat.png",
+        "/roomu-gallery-myprofile.png",
+        "/roomu-gallery-listings.png",
+      ],
     },
     {
       id: 2,
-      title: "Internal Tool",
-      tagline: "Club finance management tool",
-      thumbnail: "/aggiemenuslaptop.png",
+      title: "Wishr",
+      tagline: "Web application for wishlist management and sharing",
+      thumbnail: "/wishr-hero.png",
       tech: ["Hono", "Bun", "Drizzle", "Docker", "Next.js"],
-    },
-    {
-      id: 3,
-      title: "Atharva's Portfolio",
-      tagline: "Personal portfolio for Atharva's professional accomplishments",
-      thumbnail: "/akwebsite.png",
-      tech: ["Next.js", "TypeScript", "Vercel"],
-      url: "https://atharvapk.com/",
     },
   ];
 
   return (
     <main className="w-full max-w-6xl mx-auto">
       <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6 overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6, staggerChildren: 0.1 }}
       >
-        {recentProjects.map((project) => (
-          <motion.div
+        {featuredProjects.map((project) => (
+          <div
             key={project.id}
-            className="group bg-dark-navy dark:bg-gray-800 rounded-xl overflow-hidden transition-all duration-300 hover:-translate-y-1 border-2 border-dark-navy"
-            whileHover={{ scale: 1.02 }}
+            className="group relative w-full rounded-md overflow-hidden"
           >
-            {/* Project Image */}
-            <div className="relative h-48 overflow-hidden">
-              <Image
-                src={project.thumbnail}
-                alt={`${project.title} - ${project.tagline} - Project preview`}
-                width={400}
-                height={200}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
+            {/* Image sizes the card; overlays sit on top */}
+            <Image
+              src={project.thumbnail}
+              alt={`${project.title} - ${project.tagline} - Project preview`}
+              width={400}
+              height={400}
+              className="relative z-0 block w-full h-full object-cover"
+            />
+
+            <div
+              className="pointer-events-none absolute inset-0 z-10 bg-linear-to-t from-black/50 via-black/10 to-transparent"
+              aria-hidden
+            />
+
+            <div className="absolute inset-0 z-20 flex flex-col justify-end p-4 pointer-events-none">
+              <button
+                type="button"
+                className="pointer-events-auto w-full bg-white rounded-sm p-4 flex items-center justify-between transition-transform active:scale-[0.98] hover:bg-gray-50 text-left shadow-sm"
+                onClick={(e) => {
+                  const { top, left, width, height } =
+                    e.currentTarget.getBoundingClientRect();
+                  setOriginRect({ top, left, width, height });
+                  setSelectedProject(project);
+                }}
+              >
+                <div className="flex flex-col items-start text-left">
+                  <h3 className="red-hat-normal leading-tight text-gray-900 font-bold text-lg">
+                    {project.title}
+                  </h3>
+                  <p className="red-hat-normal leading-tight text-gray-500 text-sm line-clamp-1">
+                    {project.tagline}
+                  </p>
+                </div>
+
+                <Image
+                  src="/up-right-arrow.svg"
+                  alt="Up arrow right"
+                  width={100}
+                  height={100}
+                  className="w-8 h-8"
+                />
+              </button>
             </div>
-
-            {/* Project Content */}
-            <div className="p-4">
-              <h3 className="text-lg font-bold text-white mb-1">
-                {project.title}
-              </h3>
-              <div className="min-h-[60px]">
-                <p className="text-[#dbd7d7] text-sm mb-3 ">
-                  {project.tagline}
-                </p>
-              </div>
-
-              {/* Tech Stack */}
-              <div className="flex flex-wrap gap-1 mb-4">
-                {project.tech.map((tech, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-full"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-
-              {/* Buttons */}
-              <div className="flex gap-2">
-                <a
-                  href={project?.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 text-white hover:bg-blue-900/30 text-sm font-medium py-2 px-3 rounded-lg transition-colors text-center border border-white"
-                >
-                  View
-                </a>
-              </div>
-            </div>
-          </motion.div>
+          </div>
         ))}
       </motion.div>
+
+      {selectedProject && (
+        <ProjectExpandModal
+          project={selectedProject}
+          originRect={originRect}
+          onClose={() => setSelectedProject(null)}
+        />
+      )}
     </main>
   );
 }

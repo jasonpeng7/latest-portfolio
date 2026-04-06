@@ -3,20 +3,27 @@ import ExperienceCard from "@/components/ui/experience-block";
 export default function ExperienceList() {
   const experiences = [
     {
+      logoSrc: "/ibm-logo.png",
+      companyName: "IBM",
+      title: "Software Developer",
+      startDate: "June 2026",
+      description: "",
+    },
+    {
+      logoSrc: "/asucd-irl-logo.png",
+      companyName: "ASUCD IRL",
+      title: "Software Engineer",
+      startDate: "December 2025",
+      description:
+        "Modernized legacy Unitrans backend system within official UC Davis mobile app.",
+    },
+    {
       logoSrc: "/aggieworks_logo.png",
       companyName: "AggieWorks",
       title: "Software Engineer",
       startDate: "September 2024",
       description:
         "Worked on internal tools, mobile app development, and web applications for UC Davis students.",
-    },
-    {
-      logoSrc: "/jasewebdev.png",
-      companyName: "Web Developer",
-      title: "Founder",
-      startDate: "August 2023",
-      description:
-        "Designed web applications for small businesses. Core technologies used: Typescript, Bun/Hono, Drizzle, PostgresSQL, Docker, and Cloudflare ",
     },
     {
       logoSrc:
@@ -26,6 +33,14 @@ export default function ExperienceList() {
       startDate: "September 2024",
       description:
         "Built software products for clients. Industry standard technologies like React, Node.js, Docker, and Supabase.",
+    },
+    {
+      logoSrc: "/jasewebdev.png",
+      companyName: "Web Developer",
+      title: "Founder",
+      startDate: "August 2023",
+      description:
+        "Designed web applications for small businesses. Core technologies used: Typescript, Bun/Hono, Drizzle, PostgresSQL, Docker, and Cloudflare ",
     },
   ];
 
