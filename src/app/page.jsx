@@ -68,7 +68,7 @@ function App() {
 
               {/* Tech Stack */}
               <motion.section
-                className="mb-[50px] md:mb-[100px] xl:mx-[0px] space-y-[30px]"
+                className="mb-[50px] md:mb-[100px] space-y-[30px] mx-[15px]"
                 variants={liftUp}
                 initial="hidden"
                 animate="visible"

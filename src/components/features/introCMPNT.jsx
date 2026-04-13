@@ -60,12 +60,12 @@ export function Intro() {
       <div className="flex justify-center items-center w-full lg:w-1/2">
         <motion.div
           animate={controls}
-          className="w-full max-w-[400px] md:max-w-[500px] lg:max-w-[600px] focus:outline-none"
+          className="max-w-[250px] md:max-w-[500px] lg:max-w-[600px] focus:outline-none"
         >
           <Image
             src="/jason.jpg"
-            width={400}
-            height={400}
+            width={350}
+            height={350}
             alt="Jason Peng, Software Engineer and Full Stack Developer"
             className="object-contain w-full h-auto rounded-full"
             priority
