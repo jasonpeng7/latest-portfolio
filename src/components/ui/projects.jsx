@@ -7,42 +7,23 @@ export default function ProjectShowcase() {
   const projects = [
     {
       id: 1,
-      title: "RoomU",
-      thumbnail: "/roomulaptop.png",
-      tags: [
-        "Typescript",
-        "React Native",
-        "Docker",
-        "Bun",
-        "Tailwind",
-        "MySQL",
-        "Fullstack Development",
-      ],
-      landingPage: "https://roomu.aggieworks.org/",
+      title: "A+ Home Improvement Company",
+      thumbnail: "/pengfloorlaptop.png",
+      tags: ["Lead Generation", "B2B SaaS"],
+      landingPage: "/flooring-landing.png",
       description:
-        "RoomU is a mobile app designed to help students find roommates and housing options before lease signing season. It features a user-friendly interface with real-time chat, profile matching, seamless onboarding flow, and a responsive design optimized for mobile devices.",
-      contribution:
-        "I worked on building multiple frontend components for the account settings page, linking it to the backend API endpoints. I also led containerization of backend by setting up docker container with appropriate configurations and image. ",
-      url: "https://roomu.aggieworks.org/",
+        "Website for a local home improvement company that generates leads for the business.",
+      url: "https://aplus4home.com/",
     },
     {
       id: 2,
-      title: "Wishr",
-      thumbnail: "/wishrlaptop.png",
-      tags: [
-        "Typescript",
-        "Next.js",
-        "Supabase",
-        "Clerk Auth",
-        "MySQL",
-        "Node.js",
-      ],
-      landingPage: "/wishr.png",
+      title: "UC Davis Mobile App",
+      thumbnail: "/pengfloorlaptop.png",
+      tags: ["React + Vite", "Express", "API Design"],
+      landingPage: "/flooring-landing.png",
       description:
-        "Wishr is a full-stack web application that allows users to create, share, and manage wishlists. It features user authentication and heavy database interactions, providing an efficient platform for wishlist management.",
-      contribution:
-        "I created this website from idea to deployment, this project was very database heavy. I set up many API endpoints and calls for database interactions. I also used Supabase with Postgres and imported Clerk API for oAuth.",
-      url: "https://www.wishr.tech/",
+        "This is a mock e-commerce web app I built to practice my skills in backend development and API design. It features multiple RESTful methods connected to a dynamic shopping cart. Used Express for routing, middleware, and database interactions.",
+      url: "https://pinpoint-revamped.vercel.app/",
     },
     {
       id: 3,
@@ -75,16 +56,6 @@ export default function ProjectShowcase() {
         "I created a simple search functionality and item matching system using exact match filtering, I also created the onboarding flow of the website for new users. ",
       url: "https://pinpoint-revamped.vercel.app/",
     },
-    {
-      id: 5,
-      title: "Flooring Reno",
-      thumbnail: "/pengfloorlaptop.png",
-      tags: ["React + Vite", "Express", "API Design"],
-      landingPage: "/flooring-landing.png",
-      description:
-        "This is a mock e-commerce web app I built to practice my skills in backend development and API design. It features multiple RESTful methods connected to a dynamic shopping cart. Used Express for routing, middleware, and database interactions.",
-      url: "https://pinpoint-revamped.vercel.app/",
-    },
   ];
 
   const scrollLeft = () => {
@@ -106,7 +77,7 @@ export default function ProjectShowcase() {
   };
 
   return (
-    <div className="relative w-full ">
+    <div className="relative w-full">
       <div className="relative">
         <button
           onClick={scrollLeft}
@@ -218,7 +189,7 @@ export default function ProjectShowcase() {
                   <span className="w-3 h-3 bg-green-400 rounded-full" />
                 </div>
                 {/\.(png|jpe?g|gif|bmp|webp)$/i.test(
-                  selectedProject.landingPage
+                  selectedProject.landingPage,
                 ) ? (
                   <img
                     src={selectedProject.landingPage}

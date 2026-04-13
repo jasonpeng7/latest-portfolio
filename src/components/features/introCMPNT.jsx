@@ -6,7 +6,7 @@ export function Intro() {
   const controls = useAnimation();
 
   return (
-    <div className="flex items-center justify-center w-full lg:flex-row flex-col px-4 md:px-10 lg:px-20 gap-8 lg:gap-12 p-0 md:p-20">
+    <div className="flex items-center justify-center w-full lg:flex-row flex-col py-4 md:py-10 lg:py-20 gap-8 lg:gap-12 p-0 md:py-20">
       <div className="flex flex-col items-center lg:items-start space-y-4 text-left w-full lg:w-1/2 max-w-lg">
         <h1
           className="red-hat-extrabold bg-clip-text text-transparent bg-dark-navy 

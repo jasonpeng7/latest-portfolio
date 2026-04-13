@@ -19,7 +19,7 @@ export default function TerminalContact() {
   const inputRef = useRef(null);
 
   return (
-    <section className="flex flex-col items-center justify-center px-4 sm:px-16 mb-[30px]">
+    <section className="flex flex-col items-center justify-center mb-[30px]">
       {/* Terminal “window” */}
       <div
         ref={containerRef}
@@ -28,7 +28,7 @@ export default function TerminalContact() {
         }}
         className="
           h-96
-          w-full max-w-3xl
+          w-full max-w-[1000px]
           mx-auto
           bg-slated-950/70
           backdrop-blur
@@ -70,8 +70,8 @@ function TerminalBody({ inputRef, containerRef }) {
     if (!curQuestion) return;
     setQuestions((prev) =>
       prev.map((q) =>
-        q.key === curQuestion.key ? { ...q, complete: true, value } : q
-      )
+        q.key === curQuestion.key ? { ...q, complete: true, value } : q,
+      ),
     );
   };
 
@@ -127,7 +127,7 @@ function PreviousQuestions({ questions }) {
               <span>{q.value}</span>
             </p>
           </Fragment>
-        ) : null
+        ) : null,
       )}
     </>
   );
@@ -150,7 +150,7 @@ function Summary({ questions, setQuestions }) {
 
   const handleReset = () => {
     setQuestions((prev) =>
-      prev.map((q) => ({ ...q, value: "", complete: false }))
+      prev.map((q) => ({ ...q, value: "", complete: false })),
     );
     setComplete(false);
   };

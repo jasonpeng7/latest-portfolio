@@ -29,7 +29,10 @@ export function FeaturedProjects() {
       title: "Wishr",
       tagline: "Web application for wishlist management and sharing",
       thumbnail: "/wishr-hero.png",
-      tech: ["Hono", "Bun", "Drizzle", "Docker", "Next.js"],
+      tech: ["React", "SQL", "Zod", "API"],
+      url: "https://mywisher.me",
+      modalImage: "/wishr-hero1.png",
+      gallery: ["/wishr-home.png", "/wishr-join.png", "/wishr-wishlist.png"],
     },
   ];
 

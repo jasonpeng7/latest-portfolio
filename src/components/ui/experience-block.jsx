@@ -24,8 +24,7 @@ export default function ExperienceCard({
     <div
       className="    
       w-full
-      py-4 px-2 
-      md:px-4
+      py-4
       shadow-[0px_-1px_0px_rgba(0,0,0,0.035),0px_1px_0px_rgba(0,0,0,0.035)]
       rounded-lg
      "

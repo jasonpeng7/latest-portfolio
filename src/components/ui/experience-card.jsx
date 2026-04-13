@@ -45,7 +45,7 @@ export default function ExperienceList() {
   ];
 
   return (
-    <div className="max-w-[800px] mx-auto space-y-[15px]">
+    <div className="max-w-[1000px] mx-auto space-y-[15px]">
       {experiences.map((exp, idx) => (
         <ExperienceCard
           key={idx}

@@ -69,22 +69,9 @@ function ModalContent({ project, onClose }) {
             href={project.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-colors"
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-extreme-light-blue px-5 py-2.5 text-center text-sm raleway_regular text-black"
           >
             Visit Project
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M7 17L17 7" />
-              <path d="M7 7h10v10" />
-            </svg>
           </a>
         )}
       </div>

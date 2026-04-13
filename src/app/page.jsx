@@ -6,7 +6,6 @@ import { FeaturedProjects } from "@/components/features/featuredProjectsCMPNT";
 import { InfiniteMovingCardsDemo } from "@/components/ui/movingcardsCMPNT";
 import LoadingOverlay from "@/components/features/loadscreenCMPNT";
 import TerminalContact from "@/components/features/contactCMPNT";
-import TypeWriter from "@/components/features/aboutmeCMPNT";
 import { ThemeProvider } from "@/components/ui/themecontext";
 import { FramerContainer } from "@/components/features/framercontainerCMPNT";
 import Footer from "@/components/features/footerCMPNT";
@@ -69,7 +68,7 @@ function App() {
 
               {/* Tech Stack */}
               <motion.section
-                className="mb-[50px] md:mb-[100px] mx-[15px] xl:mx-[0px] space-y-[30px]"
+                className="mb-[50px] md:mb-[100px] xl:mx-[0px] space-y-[30px]"
                 variants={liftUp}
                 initial="hidden"
                 animate="visible"
@@ -139,14 +138,14 @@ function App() {
                 <article className="self-start">
                   <CustomTag header={"Projects"} />
                 </article>
-                <div className="w-full flex justify-center max-w-[850px]">
+                <div className="w-full flex justify-center max-w-[1000px]">
                   <ProjectShowcase />
                 </div>
               </motion.section>
 
               {/* Contact Me */}
               <motion.section
-                className="mx-[15px] xl:mx-[0px] space-y-[30px]"
+                className="mb-[50px] md:mb-[100px] mx-[15px] xl:mx-[0px] space-y-[30px]"
                 variants={slideInRight}
                 initial="hidden"
                 whileInView="visible"
