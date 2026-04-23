@@ -126,7 +126,7 @@ function App() {
               </motion.section>
 
               {/* Projects */}
-              <motion.section
+              {/* <motion.section
                 ref={projectRef}
                 className="mb-[50px] md:mb-[100px] space-y-[30px]  mx-auto flex flex-col justify-center items-center px-[16px] xl:px-[0px]"
                 variants={slideInLeft}
@@ -141,7 +141,7 @@ function App() {
                 <div className="w-full flex justify-center max-w-[1000px]">
                   <ProjectShowcase />
                 </div>
-              </motion.section>
+              </motion.section> */}
 
               {/* Contact Me */}
               <motion.section
