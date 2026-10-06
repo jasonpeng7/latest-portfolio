@@ -6,7 +6,12 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint .",
+    "test:camera": "node --test scripts/room-camera.test.mjs",
+    "test:loading": "node --test scripts/loading-screen.test.mjs",
+    "test:preview": "node --test scripts/preview-config.test.mjs",
+    "test:music": "node --test scripts/spotify.test.mjs",
+    "spotify:connect": "node scripts/connect-spotify.mjs"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.8",
@@ -17,7 +22,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
-    "tailwind-merge": "^3.3.0"
+    "react-router-dom": "^6.22.3",
+    "tailwind-merge": "^3.3.0",
+    "three": "^0.137.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

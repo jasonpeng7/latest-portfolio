@@ -1,0 +1,82 @@
+.jason-os .spotify95, .jason-os .spotify95 * { box-sizing:border-box; }
+.jason-os .spotify95 { container-type:inline-size; container-name:spotify; width:100%; min-width:0; height:100%; display:flex; flex-direction:column; background:#191d1a; color:#f0f2e9; font:14px MSSerif,Arial,sans-serif; }
+.jason-os .spotify95 p { font:14px MSSerif,Arial,sans-serif; line-height:1.6; }
+.jason-os .spotify95 h1 { font:700 38px Millennium,Georgia,serif; line-height:1.08; letter-spacing:-1px; overflow-wrap:anywhere; }
+.jason-os .spotify95 h2 { font:700 20px MSSerif,Arial,sans-serif; }
+.jason-os .s95-menu { display:flex; flex-shrink:0; justify-content:space-between; align-items:center; padding:8px 12px; border-bottom:1px solid #808080; background:#c0c0c0; color:#222; font:12px MSSerif,Arial,sans-serif; }
+.jason-os .s95-menu a { color:#164c30; text-underline-offset:3px; }
+.jason-os .s95-layout { flex:1; min-height:0; }
+.jason-os .s95-sidebar { display:flex; flex-direction:column; width:180px; flex-shrink:0; padding:22px 12px 16px; border-right:2px groove #414a41; background:#111813; gap:8px; }
+.jason-os .s95-brand { align-items:center; gap:8px; margin-bottom:26px; }
+.jason-os .s95-brand img { width:30px; height:30px; image-rendering:pixelated; }
+.jason-os .s95-brand strong { font:700 23px MSSerif,Arial,sans-serif; letter-spacing:-1px; }
+.jason-os .s95-brand strong span { color:#a7cc71; font-size:15px; margin-left:2px; letter-spacing:0; }
+.jason-os .s95-eyebrow { font:11px MSSerif,Arial,sans-serif; letter-spacing:1.8px; color:#b4c3ab; }
+.jason-os .s95-sidebar > .s95-eyebrow { margin:0 8px 8px; }
+.jason-os .s95-nav { display:flex; align-items:center; gap:10px; min-height:36px; padding:8px 10px; border:1px solid transparent; border-radius:0; background:transparent; color:#adb9ac; text-align:left; font:14px MSSerif,Arial,sans-serif; }
+.jason-os .s95-nav span { width:16px; font-size:18px; }
+.jason-os .s95-nav:hover { background:#263428; color:#fff; }
+.jason-os .s95-nav.active { color:#d6f0b5; background:#2b3b2d; border:1px solid #0a140c; border-bottom-color:#4c5f49; border-right-color:#4c5f49; }
+.jason-os .s95-library-item { gap:10px; align-items:center; margin-top:16px; padding:16px 4px; border-top:1px solid #364334; }
+.jason-os .s95-tiny-cover { display:grid; place-items:center; width:34px; height:34px; flex-shrink:0; background:repeating-linear-gradient(135deg,#365b3a 0px,#365b3a 3px,#2b422a 3px,#2b422a 6px); color:#d7f3af; border:1px solid #61765a; font:12px monospace; }
+.jason-os .s95-library-item > div, .jason-os .s95-sidebar-footer > div { flex-direction:column; gap:5px; font-size:11px; }
+.jason-os .s95-sidebar small { color:#8d9e8c; font-size:10px; }
+.jason-os .s95-sidebar-footer { margin-top:auto; padding-top:36px; align-items:center; gap:9px; }
+.jason-os .s95-avatar { display:grid; place-items:center; width:28px; height:28px; border:1px solid #61715b; background:#2b3b2d; color:#cfe6b5; font-size:10px; }
+.jason-os .s95-main { display:block; overflow:auto; min-width:0; flex:1; background:linear-gradient(#2b4434 0px,#1b231d 290px,#191d1a 450px); padding:22px 24px 20px; scrollbar-color:#8b9a83 #202920; }
+.jason-os .s95-topline { justify-content:space-between; align-items:center; gap:12px; margin-bottom:26px; font:10px MSSerif,Arial,sans-serif; letter-spacing:1.2px; color:#acbba5; }
+.jason-os .s95-status { display:flex; align-items:center; gap:6px; letter-spacing:0; white-space:nowrap; }
+.jason-os .s95-status i { width:6px; height:6px; background:#899582; box-shadow:0 0 0 2px #1a271c; }
+.jason-os .s95-status i.live { background:#b1e87b; }
+.jason-os .s95-hero { align-items:center; gap:22px; margin-bottom:26px; }
+.jason-os .s95-cover { display:block; position:relative; width:132px; height:132px; flex-shrink:0; background:repeating-linear-gradient(0deg,transparent 0px,transparent 3px,#304a30 3px,#304a30 4px),linear-gradient(135deg,#9dbb78,#3d603f); border:1px solid #b1c693; box-shadow:4px 4px 0 #121b13; overflow:hidden; }
+.jason-os .s95-cover img { width:100%; height:100%; object-fit:cover; display:block; image-rendering:auto; }
+.jason-os .s95-record { position:absolute; width:94px; height:94px; border-radius:50%; left:18px; top:12px; background:repeating-radial-gradient(circle,#20271f 0px,#20271f 2px,#303b2a 3px,#20271f 4px); box-shadow:2px 2px 0 #253725; }
+.jason-os .s95-record::after { content:""; position:absolute; inset:34px; border:8px solid #b7cd83; border-radius:50%; background:#1a281c; }
+.jason-os .s95-cover-caption { position:absolute; bottom:9px; left:12px; color:#dbe8bf; font:10px monospace; letter-spacing:2px; }
+.jason-os .s95-hero-copy { flex-direction:column; align-items:flex-start; gap:10px; min-width:0; }
+.jason-os .s95-hero-copy p { color:#c0cbb8; }
+.jason-os .s95-owner { font-size:11px; color:#a8bb9c; }
+.jason-os .s95-section-heading { align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px; }
+.jason-os .s95-section-heading > span { color:#91a18a; font-size:11px; }
+.jason-os .s95-player { display:flex; flex-direction:column; border:2px groove #78826e; background:#121713; padding:5px; box-shadow:3px 3px 0 #0c120e; }
+.jason-os .s95-player-label { align-items:center; justify-content:space-between; gap:12px; min-height:34px; padding:2px 5px 7px; font-size:12px; color:#bad7a1; }
+.jason-os .s95-player-label > span { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.jason-os .s95-player iframe { width:100%; height:352px; border:0; display:block; background:#1f1f1f; color-scheme:dark; }
+.jason-os .s95-button { padding:5px 10px; border:1px solid #171d16; border-top-color:#e1e8d7; border-left-color:#e1e8d7; box-shadow:inset -1px -1px #68735e,inset 1px 1px #c5d0b9; border-radius:0; background:#adb99e; color:#172515; font:12px MSSerif,Arial,sans-serif; white-space:nowrap; }
+.jason-os .s95-button:active { border-color:#68735e; box-shadow:inset 1px 1px #172515; }
+.jason-os .s95-button:hover { background:#c2d0af; }
+.jason-os .s95-main > .s95-playback-note { margin-top:14px; color:#98a68f; font-size:11px; }
+.jason-os .s95-activity { flex-wrap:wrap; align-items:center; gap:14px; margin-bottom:20px; }
+.jason-os .s95-activity-progress { flex-direction:column; flex:1; min-width:180px; gap:8px; color:#a9bc9a; font-size:11px; }
+.jason-os .s95-activity-progress progress { height:7px; width:100%; accent-color:#b1d889; border:0; }
+.jason-os .s95-activity > p { width:100%; color:#8fa085; font-size:11px; }
+.jason-os .s95-empty { align-items:center; flex-wrap:wrap; gap:12px; padding:14px; margin-bottom:20px; border:1px solid #43523c; background:#202b20; }
+.jason-os .s95-empty > span { color:#b9d295; font-size:25px; }
+.jason-os .s95-empty > div { flex:1; flex-direction:column; gap:3px; min-width:180px; }
+.jason-os .s95-empty strong { font-size:12px; }
+.jason-os .s95-empty p { font-size:11px; color:#a3b398; }
+@container spotify (max-width:600px) {
+  .jason-os .s95-sidebar { width:136px; padding:20px 8px 12px; }
+  .jason-os .s95-brand strong { font-size:18px; }
+  .jason-os .s95-brand img { width:23px; height:23px; }
+  .jason-os .s95-main { padding:18px 16px; }
+  .jason-os .s95-cover { width:96px; height:96px; }
+  .jason-os .s95-record { width:68px; height:68px; top:8px; left:13px; }
+  .jason-os .s95-record::after { inset:24px; border-width:6px; }
+  .jason-os .spotify95 h1 { font-size:28px; }
+  .jason-os .s95-hero { gap:16px; }
+  .jason-os .s95-topline > span:first-child, .jason-os .s95-section-heading > span { display:none; }
+}
+@container spotify (max-width:440px) {
+  .jason-os .s95-layout { flex-direction:column; }
+  .jason-os .s95-sidebar { width:100%; padding:8px; flex-direction:row; gap:5px; border-right:0; border-bottom:2px groove #414a41; }
+  .jason-os .s95-brand { margin:0 4px 0 0; }
+  .jason-os .s95-brand strong, .jason-os .s95-sidebar > .s95-eyebrow, .jason-os .s95-library-item, .jason-os .s95-sidebar-footer { display:none; }
+  .jason-os .s95-nav { padding:6px 9px; font-size:12px; }
+  .jason-os .s95-topline { margin-bottom:18px; }
+  .jason-os .s95-hero { align-items:flex-start; }
+  .jason-os .s95-eyebrow { font-size:9px; letter-spacing:1px; }
+  .jason-os .spotify95 h1 { font-size:26px; }
+  .jason-os .s95-cover-caption { font-size:8px; left:8px; }
+}

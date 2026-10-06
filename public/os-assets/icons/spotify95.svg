@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <path fill="#0b2016" d="M8 1h16v2h4v4h3v18h-3v4h-4v2H8v-2H4v-4H1V7h3V3h4z"/>
+  <path fill="#a9d97f" d="M8 3h16v2h3v3h2v16h-2v3h-3v2H8v-2H5v-3H3V8h2V5h3z"/>
+  <path fill="#183b28" d="M8 10h13v1h4v3h-4v-1H10v1H7v-3h1zm1 7h12v1h3v3h-3v-1H10v1H8v-3h1zm2 7h9v1h2v2h-3v-1h-8v1H9v-2h2z"/>
+</svg>

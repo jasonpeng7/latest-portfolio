@@ -1,0 +1,482 @@
+.jason-os {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+        'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+        'Helvetica Neue', sans-serif;
+    /* -webkit-font-smoothing: antialiased; */
+    /* -moz-osx-font-smoothing: grayscale; */
+}
+
+.jason-os, .jason-os {
+    background-color: #fff;
+}
+
+.jason-os code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+        monospace;
+}
+
+
+/* 8px */
+@font-face {
+    font-family: MSSerif;
+    src: url(/os-assets/fonts/MSSansSerif.ttf);
+}
+
+@font-face {
+    font-family: Millennium;
+    src: url(/os-assets/fonts/Millennium.ttf);
+}
+
+@font-face {
+    font-family: MillenniumBold;
+    src: url(/os-assets/fonts/Millennium-Bold.ttf);
+}
+
+@font-face {
+    font-family: Terminal;
+    src: url(/os-assets/fonts/Terminal.ttf);
+}
+
+
+.jason-os * {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.jason-os p, .jason-os h1, .jason-os h2, .jason-os h3, .jason-os h4, .jason-os h5, .jason-os h6 {
+    margin: 0;
+}
+
+.jason-os p {
+    font-family: Millennium, 'Times New Roman', Times, serif;
+    font-size: 18px;
+}
+
+.jason-os p b {
+    font-family: MillenniumBold, 'Times New Roman', Times, serif;
+}
+
+.jason-os .showcase-header {
+    font-family: lores-15-bold-alt-oakland;
+    font-size: 15px;
+    color: white;
+}
+
+.jason-os .toolbar-text {
+    font-family: lores-15-bold-alt-oakland;
+    font-size: 18px;
+    color: black;
+}
+
+.jason-os h1 {
+    font-family: gastromond, Georgia, serif;
+    font-size: 64px;
+}
+
+.jason-os h2 {
+    font-family: MillenniumBold, 'Times New Roman', Times, serif;
+    font-size: 32px;
+}
+
+.jason-os h3 {
+    font-family: MillenniumBold, 'Times New Roman', Times, serif;
+    font-size: 24px;
+    letter-spacing: 0px;
+}
+
+.jason-os h4 {
+    font-family: MillenniumBold, 'Times New Roman', Times, serif;
+    font-size: 18px;
+    letter-spacing: 0px;
+}
+
+.jason-os li {
+    margin-bottom: 16px;
+}
+
+.jason-os .blend {
+    mix-blend-mode: screen;
+    background-color: red;
+}
+
+.jason-os {
+    --button-highlight: #ffffff;
+    --button-face: #747474;
+    --button-shadow: #808080;
+    --window-frame: #2b2b2b;
+    --surface: #c0c0c0;
+    --surface-hover: #e9e9e9;
+    --border-field: inset -1px -1px var(--button-highlight),
+        inset 1px 1px var(--button-shadow), inset -2px -2px var(--button-face),
+        inset 2px 2px var(--window-frame);
+    --border-raised-outer: inset -1px -1px var(--window-frame),
+        inset 1px 1px var(--button-highlight);
+    --border-raised-inner: inset -2px -2px var(--button-shadow),
+        inset 2px 2px var(--button-face);
+}
+
+.jason-os .big-button-container {
+    box-shadow: var(--border-raised-outer), var(--border-raised-inner);
+    padding: 24px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.jason-os .big-button-container:hover {
+    background-color: var(--surface-hover);
+}
+
+.jason-os .big-button-container:active {
+    box-shadow: var(--border-raised-inner), var(--border-raised-outer);
+    /* box-shadow: inset var(--border-raised-inner),
+        inset var(--border-raised-outer); */
+    background-color: var(--surface);
+}
+
+.jason-os input {
+    width: 100%;
+    padding: 4px 8px;
+    box-sizing: border-box;
+    border: none;
+    resize: none;
+    box-shadow: var(--border-field);
+    font-family: Millennium, sans-serif;
+    font-size: 18px;
+}
+
+.jason-os textarea {
+    width: 100%;
+    height: 150px;
+    padding: 4px 8px;
+    border: none;
+    box-sizing: border-box;
+    resize: none;
+    box-shadow: var(--border-field);
+    font-family: Millennium, sans-serif;
+    font-size: 18px;
+}
+
+.jason-os .music-controller-container {
+    box-shadow: var(--border-field);
+}
+
+.jason-os textarea:focus, .jason-os textarea:active, .jason-os input:focus, .jason-os input:active {
+    outline: none;
+    background-color: #fbffc4;
+}
+
+.jason-os .button-border {
+    box-sizing: border-box;
+    background: var(--surface-hover);
+    box-shadow: var(--border-raised-outer), var(--border-raised-inner);
+    border-radius: 0;
+    border: none;
+}
+
+.jason-os .site-button {
+    box-sizing: border-box;
+    background: var(--surface-hover);
+    box-shadow: var(--border-raised-outer), var(--border-raised-inner);
+    border-radius: 0;
+    border: none;
+    color: black;
+    font-size: 18px;
+    /* flex-shrink: 1; */
+    padding: 4px 12px;
+    cursor: pointer;
+    font-family: Millennium;
+    overflow: hidden;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.jason-os .site-button:hover {
+    background-color: var(--surface);
+}
+
+.jason-os .site-button:active {
+    background-color: var(--button-shadow);
+}
+
+.jason-os .site-button:disabled {
+    background-color: var(--button-shadow);
+    /* cursor cross */
+    cursor: not-allowed;
+}
+
+.jason-os .captioned-image {
+    align-self: center;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 32px;
+}
+
+.jason-os .captioned-image img {
+    width: 100%;
+}
+
+.jason-os .text-block {
+    margin-top: 16px;
+    margin-bottom: 32px;
+    display: flex;
+    flex-direction: column;
+    text-align: justify;
+}
+
+.jason-os .site-page {
+    display: flex;
+    left: 0px;
+    right: 0px;
+    position: absolute;
+    bottom: 0px;
+    top: 0px;
+    overflow: hidden;
+    transform: translate3d(0, 0, 0);
+    overflow: hidden;
+}
+
+.jason-os .site-page-content {
+    display: flex;
+    flex-direction: column;
+    margin-left: 300px;
+    width: 100%;
+    padding: 64px;
+    padding-top: 32px;
+    padding-left: 16px;
+    overflow-y: scroll;
+}
+
+.jason-os .router-link:visited {
+    color: purple;
+}
+
+.jason-os .loading::after {
+    display: inline-block;
+    animation: dotty steps(1, end) 1s infinite;
+    content: '';
+}
+
+@keyframes dotty {
+    0% {
+        content: '';
+    }
+    25% {
+        content: '.';
+    }
+    50% {
+        content: '..';
+    }
+    75% {
+        content: '...';
+    }
+    100% {
+        content: '';
+    }
+}
+
+@keyframes arrow {
+    from {
+        opacity: 0;
+        transform: scale(1, 0);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1, 1);
+    }
+    to {
+        transform: scale(1, 1);
+    }
+}
+
+.jason-os .arrow-mount {
+    transition: opacity;
+    animation: arrow 0.2s normal forwards ease-out;
+}
+
+.jason-os .rainbow-wrapper {
+    background: linear-gradient(
+        124deg,
+        #ff2400,
+        #e81d1d,
+        #e8b71d,
+        #e3e81d,
+        #1de840,
+        #1ddde8,
+        #2b1de8,
+        #dd00f3,
+        #dd00f3
+    );
+    background-size: 1800% 1800%;
+
+    -webkit-animation: rainbow 18s ease infinite;
+    -z-animation: rainbow 18s ease infinite;
+    -o-animation: rainbow 18s ease infinite;
+    animation: rainbow 18s ease infinite;
+}
+
+@-webkit-keyframes rainbow {
+    0% {
+        background-position: 0% 82%;
+    }
+    50% {
+        background-position: 100% 19%;
+    }
+    100% {
+        background-position: 0% 82%;
+    }
+}
+@-moz-keyframes rainbow {
+    0% {
+        background-position: 0% 82%;
+    }
+    50% {
+        background-position: 100% 19%;
+    }
+    100% {
+        background-position: 0% 82%;
+    }
+}
+@-o-keyframes rainbow {
+    0% {
+        background-position: 0% 82%;
+    }
+    50% {
+        background-position: 100% 19%;
+    }
+    100% {
+        background-position: 0% 82%;
+    }
+}
+@keyframes rainbow {
+    0% {
+        background-position: 0% 82%;
+    }
+    50% {
+        background-position: 100% 19%;
+    }
+    100% {
+        background-position: 0% 82%;
+    }
+}
+
+.jason-os .shortcut-border {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23ea3323' stroke-width='2' stroke-dasharray='1%2c1' stroke-dashoffset='0' stroke-linecap='butt'/%3e%3c/svg%3e");
+}
+
+.jason-os .selected-shortcut-border {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23fff' stroke-width='2' stroke-dasharray='1%2c1' stroke-dashoffset='0' stroke-linecap='butt'/%3e%3c/svg%3e");
+}
+
+.jason-os .notyf-announcer {
+    opacity: 0!important;
+}
+
+.jason-os .notyf {
+    opacity: 0!important;
+}
+
+.jason-os .start-menu-option:hover {
+    background-color: #0000aa;
+    cursor: pointer;
+    color: white;
+}
+.jason-os .App {
+    height: 100vh;
+    /* width: 1280px; */
+    width: 100%;
+    /* min-height: 100%; */
+    image-rendering: pixelated;
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+.jason-os, .jason-os {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+.jason-os div {
+    display: flex;
+}
+
+.jason-os .os-root {
+    height: 100%;
+}
+
+.jason-os .white {
+    color: #fff;
+}
+
+
+.jason-os .blinking-cursor {
+    background-color: #fff;
+    width: 0.8em;
+    height: 0.15em;
+    -webkit-animation: 0.65s blink step-end infinite;
+    -moz-animation: 0.65s blink step-end infinite;
+    -ms-animation: 0.65s blink step-end infinite;
+    -o-animation: 0.65s blink step-end infinite;
+    animation: 0.65s blink step-end infinite;
+}
+
+@keyframes blink {
+    from,
+    to {
+        background-color: transparent;
+    }
+    50% {
+        background-color: white;
+    }
+}
+
+@-moz-keyframes blink {
+    from,
+    to {
+        background-color: transparent;
+    }
+    50% {
+        background-color: white;
+    }
+}
+
+@-webkit-keyframes blink {
+    from,
+    to {
+        background-color: transparent;
+    }
+    50% {
+        background-color: white;
+    }
+}
+
+@-ms-keyframes blink {
+    from,
+    to {
+        background-color: transparent;
+    }
+    50% {
+        background-color: white;
+    }
+}
+
+@-o-keyframes blink {
+    from,
+    to {
+        background-color: transparent;
+    }
+    50% {
+        background-color: white;
+    }
+}
