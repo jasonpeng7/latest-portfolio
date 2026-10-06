@@ -5,7 +5,10 @@
 .jason-os .showcase-header,.jason-os .toolbar-text { font-family:MSSerif,Arial,sans-serif; }
 .jason-os .toolbar-text { font-size:14px; font-weight:bold; }
 .jason-os nav, .jason-os article, .jason-os section { display:flex; }
-.jason-os .personal-content { display:flex; flex-direction:column; gap:24px; box-sizing:border-box; flex:1; }
+.jason-os .personal-content { display:flex; flex-direction:column; gap:24px; box-sizing:border-box; flex:1; width:auto; min-width:0; min-height:0; }
+/* Keep long pages scrollable without flex shrinking their buttons or images. */
+.jason-os .personal-content > * { flex-shrink:0; }
+.jason-os .personal-content .site-button { flex-shrink:0; min-height:36px; line-height:1.4; padding:8px 14px; max-width:100%; overflow:visible; }
 .jason-os .personal-content h1 { line-height:1.1; margin-bottom:8px; }
 .jason-os .personal-content p { line-height:1.5; }
 .jason-os .showcase-sidebar { width:300px; height:100%; flex-direction:column; padding:48px; box-sizing:border-box; position:absolute; overflow:auto; flex-shrink:0; }
@@ -15,7 +18,7 @@
 .jason-os .showcase-sidebar-links { flex-direction:column; }
 .jason-os .personal-about { align-items:flex-start; gap:28px; flex-wrap:wrap; }
 .jason-os .personal-about > div { flex-direction:column; gap:24px; flex:1; min-width:200px; }
-.jason-os .portrait { object-fit:cover; border:2px inset #c3c6ca; max-width:220px; }
+.jason-os .portrait { object-fit:cover; object-position:52% 48%; border:2px inset #c3c6ca; max-width:220px; image-rendering:auto; }
 .jason-os .skills-list { flex-wrap:wrap; gap:10px; margin:0 0 24px; }
 .jason-os .skills-list span { padding:5px 10px; border:1px solid #aaa; background:#f1f1ee; font:16px Millennium,serif; }
 .jason-os .social-links { gap:24px; font:18px Millennium,serif; }
@@ -35,6 +38,8 @@
 .jason-os .project-gallery > img { width:100%; max-height:400px; object-fit:contain; image-rendering:auto; background:#eee; }
 .jason-os .gallery-controls { align-items:center; justify-content:center; gap:20px; }
 .jason-os .project-link { align-self:flex-start; text-decoration:none; }
+.jason-os .project-context { color:#555; }
+.jason-os .project-outcome { flex-direction:column; gap:12px; padding:20px; border-left:4px solid #0f62fe; background:#edf5ff; }
 .jason-os .contact-header { align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
 .jason-os .contact-socials { gap:8px; }
 .jason-os .contact-socials a { padding:12px; }
@@ -50,6 +55,18 @@
 .jason-os .shutdown-screen { background:#1d2e2f; color:#fff; padding:64px; flex:1; flex-direction:column; gap:24px; }
 .jason-os .shutdown-screen button { align-self:flex-start; }
 .jason-os .os-room-link { position:absolute; right:12px; top:10px; color:#fff; font:12px MSSerif,Arial,sans-serif; z-index:0; }
+.jason-os .desktop-shortcuts { display:grid; gap:18px; max-height:calc(100% - 64px); overflow-y:auto; padding:4px; }
+.jason-os .desktop-shortcut { width:84px; min-height:82px; gap:6px; cursor:pointer; }
+.jason-os .desktop-shortcut > div:first-child { position:relative; }
+.jason-os .desktop-shortcut img,.jason-os .desktop-shortcut-icon { width:48px; height:48px; }
+.jason-os .desktop-shortcut-icon { mask-size:contain; -webkit-mask-size:contain; }
+.jason-os .desktop-shortcut p { font-size:12px; line-height:1.4; }
+/* Coarse pointers also cover the fixed-resolution desktop inside the 3D CRT. */
+@media(max-width:699px),(pointer:coarse) {
+ .jason-os .desktop-shortcut { width:104px; min-height:104px; gap:8px; }
+ .jason-os .desktop-shortcut img,.jason-os .desktop-shortcut-icon { width:64px; height:64px; }
+ .jason-os .desktop-shortcut p { font-size:15px; }
+}
 .os-loading { background:#3e9697; color:white; height:100dvh; padding:32px; font:14px monospace; }
 .room-page { position:relative; width:100%; height:100dvh; overflow:hidden; font-family:monospace; background:#000; }
 .room-stage { position:absolute; inset:0; overflow:hidden; z-index:0; }

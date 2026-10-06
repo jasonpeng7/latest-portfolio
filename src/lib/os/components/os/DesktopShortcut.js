@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import colors from '../../constants/colors';
 import { Icon } from '../general';
 import getIconByName from '../../assets/icons';
@@ -6,8 +6,6 @@ const DesktopShortcut = ({ icon, shortcutName, invertText, onOpen, }) => {
     const [isSelected, setIsSelected] = useState(false);
     const [shortcutId, setShortcutId] = useState('');
     const [lastSelected, setLastSelected] = useState(false);
-    const containerRef = useRef();
-    const [scaledStyle, setScaledStyle] = useState({});
     const requiredIcon = getIconByName(icon);
     const [doubleClickTimerActive, setDoubleClickTimerActive] = useState(false);
     const getShortcutId = useCallback(() => {
@@ -17,21 +15,6 @@ const DesktopShortcut = ({ icon, shortcutName, invertText, onOpen, }) => {
     useEffect(() => {
         setShortcutId(getShortcutId());
     }, [shortcutName, getShortcutId]);
-    useEffect(() => {
-        if (containerRef.current && Object.keys(scaledStyle).length === 0) {
-            //@ts-ignore
-            const boundingBox = containerRef.current.getBoundingClientRect();
-            setScaledStyle({
-                transformOrigin: 'center',
-                transform: 'scale(1.5)',
-                left: boundingBox.width / 4,
-                top: boundingBox.height / 4,
-                // transform: 'scale(1.5)',
-                // left: boundingBox.width / 4,
-                // top: boundingBox.height / 4,
-            });
-        }
-    }, [scaledStyle]);
     const handleClickOutside = useCallback((event) => {
         // @ts-ignore
         const targetId = event.target.id;
@@ -63,12 +46,13 @@ const DesktopShortcut = ({ icon, shortcutName, invertText, onOpen, }) => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [isSelected, handleClickOutside]);
-    return (React.createElement("div", { id: `${shortcutId}`, role: "button", tabIndex: 0, "aria-label": `Open ${shortcutName}`, onKeyDown: event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onOpen(); } }, style: Object.assign({}, styles.appShortcut, scaledStyle), onMouseDown: handleClickShortcut, ref: containerRef },
+    return (React.createElement("div", { id: `${shortcutId}`, className: 'desktop-shortcut', role: "button", tabIndex: 0, "aria-label": `Open ${shortcutName}`, onKeyDown: event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onOpen(); } }, style: styles.appShortcut, onPointerDown: event => { if (event.pointerType === 'touch' || event.pointerType === 'pen') { onOpen(); setIsSelected(false); } else if (event.button === 0) handleClickShortcut(); } },
         React.createElement("div", { id: `${shortcutId}`, style: styles.iconContainer },
             React.createElement("div", { id: `${shortcutId}`, className: "desktop-shortcut-icon", style: Object.assign({}, styles.iconOverlay, isSelected && styles.checkerboard, isSelected && {
-                    WebkitMask: `url(${requiredIcon})`,
+                    WebkitMask: `url(${requiredIcon}) center / contain no-repeat`,
+                    mask: `url(${requiredIcon}) center / contain no-repeat`,
                 }) }),
-            React.createElement(Icon, { icon: icon, style: styles.icon })),
+            React.createElement(Icon, { icon: icon })),
         React.createElement("div", { className: isSelected
                 ? 'selected-shortcut-border'
                 : lastSelected
@@ -78,8 +62,6 @@ const DesktopShortcut = ({ icon, shortcutName, invertText, onOpen, }) => {
 };
 const styles = {
     appShortcut: {
-        position: 'absolute',
-        width: 56,
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'column',
@@ -90,7 +72,6 @@ const styles = {
         textOverflow: 'wrap',
         fontFamily: 'MSSerif',
         color: 'white',
-        fontSize: 8,
         paddingRight: 2,
         paddingLeft: 2,
     },
@@ -98,15 +79,9 @@ const styles = {
         cursor: 'pointer',
         paddingBottom: 3,
     },
-    icon: {
-        width: 32,
-        height: 32,
-    },
     iconOverlay: {
         position: 'absolute',
         top: 0,
-        width: 32,
-        height: 32,
     },
     checkerboard: {
         backgroundImage: `linear-gradient(45deg, ${colors.blue} 25%, transparent 25%),

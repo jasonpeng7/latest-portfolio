@@ -7,6 +7,7 @@ import Toolbar from './Toolbar';
 import DesktopShortcut from './DesktopShortcut';
 import Credits from '../applications/Credits';
 import Spotify95 from '../applications/Spotify95';
+import Photos from '../applications/Photos';
 const APPLICATIONS = {
     // computer: {
     //     key: 'computer',
@@ -25,6 +26,12 @@ const APPLICATIONS = {
         name: 'Spotify95',
         shortcutIcon: 'spotifyIcon',
         component: Spotify95,
+    },
+    photos: {
+        key: 'photos',
+        name: 'Photos',
+        shortcutIcon: 'photosIcon',
+        component: Photos,
     },
     credits: {
         key: 'credits',
@@ -165,10 +172,8 @@ const Desktop = (props) => {
                 onClose: () => removeWindow(key),
             })));
         }),
-        React.createElement("div", { style: styles.shortcuts }, shortcuts.map((shortcut, i) => {
-            return (React.createElement("div", { style: Object.assign({}, styles.shortcutContainer, {
-                    top: i * 104,
-                }), key: shortcut.shortcutName },
+        React.createElement("div", { className: 'desktop-shortcuts', style: styles.shortcuts }, shortcuts.map((shortcut) => {
+            return (React.createElement("div", { key: shortcut.shortcutName },
                 React.createElement(DesktopShortcut, { icon: shortcut.icon, shortcutName: shortcut.shortcutName, onOpen: shortcut.onOpen })));
         })),
         React.createElement(Toolbar, { windows: windows, toggleMinimize: toggleMinimize, shutdown: startShutdown }))) : (React.createElement(ShutdownSequence, { setShutdown: setShutdown, numShutdowns: numShutdowns }));
@@ -183,9 +188,6 @@ const styles = {
         minHeight: '100%',
         flex: 1,
         backgroundColor: '#1d2e2f',
-    },
-    shortcutContainer: {
-        position: 'absolute',
     },
     shortcuts: {
         position: 'absolute',

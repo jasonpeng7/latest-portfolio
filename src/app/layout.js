@@ -2,6 +2,7 @@ import "./globals.css";
 import "@/lib/os/os.css";
 import "@/lib/os/personal.css";
 import "@/lib/os/spotify.css";
+import "@/lib/os/photos.css";
 import { profile } from "@/data/portfolio";
 export const metadata = {
   metadataBase: new URL(profile.website),

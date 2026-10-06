@@ -6,7 +6,7 @@ export const profile = {
   linkedin: "https://www.linkedin.com/in/iamjasonpeng7/",
   website: "https://jasonpe.com",
   bio: "Fullstack developer and computer science student in love with building impactful software. My work focuses on web development, from design to coding, mobile development, and backend systems.",
-  portrait: "/jason.jpg",
+  portrait: "/images/jason-santorini.jpg",
 };
 
 export const skills = [
@@ -29,6 +29,8 @@ export const experiences = [
     title: "Software Developer",
     date: "June 2026",
     logo: "/ibm-logo.png",
+    description:
+      "Built Kubernetes-based Spark debugging tools and Jenkins pipelines to validate watsonx.data installations and stress-test engine concurrency on OpenShift.",
   },
   {
     company: "ASUCD IRL",
@@ -64,6 +66,21 @@ export const experiences = [
 ];
 
 export const projects = [
+  {
+    id: "spark-copilot",
+    name: "Spark Copilot",
+    context: "IBM · WatsonX Challenge · August 2026",
+    description:
+      "An IDE extension that diagnoses failed jobs on IBM watsonx.data Spark engines using a local IBM Granite model and relevant Kubernetes pod events and logs.",
+    contribution:
+      "Built the debugging extension and a retrieval-augmented generation (RAG) system grounded in previous customer issues and official Spark and watsonx.data documentation to classify root causes with real operational context.",
+    outcome:
+      "Reduced a manual log hunt of roughly 15 minutes to a 10-second AI diagnosis — approximately 90× faster debugging for engineering and support teams.",
+    image: "/images/projects/spark-copilot-hero.webp",
+    imageAlt: "Concept illustration of Spark Copilot turning Kubernetes logs into an AI diagnosis",
+    tech: ["Python", "IBM Granite", "Ollama", "RAG", "Kubernetes", "OpenShift", "watsonx.data"],
+    gallery: [],
+  },
   {
     id: "roomu",
     name: "RoomU",
@@ -104,27 +121,5 @@ export const projects = [
     ],
     url: "https://www.aggiemenus.org/menu/",
     gallery: ["/aggiemenulanding.png"],
-  },
-  {
-    id: "pinpoint",
-    name: "Pinpoint",
-    description:
-      "A lost-and-found web application for UC Davis students with onboarding, a dashboard, item search, and item matching.",
-    contribution:
-      "Created the onboarding flow, search functionality, and an item-matching system using exact-match filtering.",
-    image: "/pinpointlaptop.png",
-    tech: ["TypeScript", "Next.js", "React", "Google Auth", "Supabase"],
-    url: "https://pinpoint-revamped.vercel.app/",
-    gallery: [],
-  },
-  {
-    id: "aplus",
-    name: "A+ Home Improvement",
-    description:
-      "A website for a local home improvement company that generates leads for the business.",
-    image: "/pengfloorlaptop.png",
-    tech: ["Web Development", "Lead Generation"],
-    url: "https://aplus4home.com/",
-    gallery: ["/flooring-landing.png"],
   },
 ];

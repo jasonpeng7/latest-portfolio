@@ -9,6 +9,7 @@ const doomIcon = "/os-assets/icons/doomIcon.png";
 const henordleIcon = "/os-assets/icons/henordleIcon.png";
 const credits = "/os-assets/icons/credits.png";
 const spotifyIcon = "/os-assets/icons/spotify95.svg";
+const photosIcon = "/os-assets/icons/photos95.svg";
 const volumeOn = "/os-assets/icons/volumeOn.png";
 const volumeOff = "/os-assets/icons/volumeOff.png";
 const trailIcon = "/os-assets/icons/trailIcon.png";
@@ -30,6 +31,7 @@ const icons = {
     volumeOff: volumeOff,
     credits: credits,
     spotifyIcon,
+    photosIcon,
     scrabbleIcon: scrabbleIcon,
     henordleIcon: henordleIcon,
     close: close,

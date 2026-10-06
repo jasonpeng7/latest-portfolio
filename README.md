@@ -31,7 +31,7 @@ The surrounding room retains
 the reference's baked models, camera positions, steam/screen shaders, and audio.
 The OS shell is adapted from the linked inner-site
 repository, preserving its windows, taskbar, shortcuts, fonts, and drag/resize UI.
-The desktop includes My Showcase (with a J icon), Spotify95, and Credits.
+The desktop includes My Showcase (with a J icon), Spotify95, Photos, and Credits.
 
 ## Run
 
@@ -45,15 +45,20 @@ without WebGL. Use START to enter and click the room to approach the desk.
 Camera buttons provide direct room, desk, and computer views. The Desk camera stays
 fixed; click the monitor or COMPUTER to enter the monitor view.
 Escape steps back from the monitor. Sound and free-camera controls are at the top left.
-Desktop shortcuts open on double-click or Enter. Window buttons minimize, maximize,
+Desktop shortcuts open on double-click or Enter, or one tap on touchscreens.
+Touchscreen shortcuts use larger icons and labels, including inside the 3D CRT.
+Window buttons minimize, maximize,
 and close; taskbar tabs restore minimized windows.
 
 ## Content
 
 Edit `src/data/portfolio.js` to update the bio, social links, skills, experience, projects,
 and galleries. Content was migrated from the existing portfolio without inventing
-credentials or project results. The IBM description, graduation/degree details,
-location, availability, and résumé are intentionally omitted until supplied.
+credentials or project results. The IBM description and Spark Copilot project now
+use Jason's supplied résumé. Spark Copilot has no public demo/repository link.
+Degree details, location, availability, and a public résumé download remain omitted.
+The About photo is the supplied Santorini portrait. Spark Copilot's conceptual hero
+was generated with the built-in image tool; the prompt is in `docs/spark-copilot-art.md`.
 The inconsistent UC Davis Mobile App project entry was omitted: its old description,
 images, and link referred to different projects. The Unitrans work remains under ASUCD IRL.
 
@@ -62,6 +67,33 @@ It needs the visitor's email application; no third-party contact backend is conf
 The OS uses the original Adobe Typekit stylesheet for its display fonts, with local
 Millennium and MSSansSerif fonts and system fallbacks.
 The monitor loads `/desktop?embedded=1` on the same origin.
+
+## Photos
+
+Photos is a local retro gallery with album filters, title/place search, and a
+full-size viewer with previous/next controls. The Travel album includes Jason's
+three supplied photos: Greek Flag, Blue Domes, and Harbor Boats.
+
+1. Put optimized JPEG, PNG, or WebP images in `public/photos/`.
+2. Add entries to `src/data/photos.js`, using unique IDs and public image paths:
+
+```js
+export const photos = [
+  {
+    id: "coast-01",
+    src: "/photos/coast.jpg",
+    title: "Along the coast",
+    alt: "Blue sea beneath a coastal village",
+    album: "Travel",
+    location: "Santorini, Greece",
+    date: "2026-09-01",
+  },
+];
+```
+
+`album`, `location`, and `date` are optional. Album names create sidebar buttons
+automatically. Visitors can browse the collection in both 2D and 3D;
+the collection is maintained in the repository. Commit and deploy to publish new photos.
 
 ## Spotify95
 
