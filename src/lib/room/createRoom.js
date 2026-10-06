@@ -148,8 +148,13 @@ export function createRoom(host, { onProgress, onReady, onError, onView }) {
     }
     return new THREE.Vector3(0, screenPosition.y, z);
   };
+  const roomPosition = (target = new THREE.Vector3()) => target.set(
+    Math.sin((elapsed + 19000) * 0.00008) * -20000,
+    Math.sin((elapsed + 1000) * 0.000004) * 4000 + 9000,
+    20000,
+  );
   const keyframes = () => ({
-    room: { position: new THREE.Vector3(-20000, 9500, 20000), focal: new THREE.Vector3(0, -1000, 0) },
+    room: { position: roomPosition(), focal: new THREE.Vector3(0, -1000, 0) },
     desk: { position: new THREE.Vector3(0, 1800, 5500 + host.clientHeight / host.clientWidth * 3000 - 1800), focal: new THREE.Vector3(0, 500, 0) },
     monitor: { position: monitorPosition(), focal: new THREE.Vector3(0, 950, 0) },
     free: { position: new THREE.Vector3(-15000, 10000, 15000), focal: new THREE.Vector3(-100, 350, 0) },
@@ -492,6 +497,9 @@ export function createRoom(host, { onProgress, onReady, onError, onView }) {
     if (tween) {
       const t = Math.min((now - tween.start) / tween.duration, 1);
       const ease = 1 - Math.pow(1 - t, 5);
+      // Ease into the ongoing pan itself. A fixed Room endpoint would snap to
+      // the current pan position on the first frame after the tween finishes.
+      if (view === "room") roomPosition(tween.to);
       position.lerpVectors(tween.from, tween.to, ease);
       focal.lerpVectors(tween.fromFocal, tween.toFocal, ease);
       if (t === 1) {
@@ -499,8 +507,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView }) {
         if (view === "free") { camera.position.copy(position); controls.target.copy(focal); controls.enabled = true; controls.update(); }
       }
     } else if (view === "room") {
-      position.x = Math.sin((elapsed + 19000) * 0.00008) * -20000;
-      position.y = Math.sin((elapsed + 1000) * 0.000004) * 4000 + 9000;
+      roomPosition(position);
     }
     if (!controls.enabled) {
       camera.position.copy(position);

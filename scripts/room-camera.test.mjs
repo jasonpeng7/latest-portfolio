@@ -176,6 +176,38 @@ test("Desk and Computer move progressively closer, and Room returns to the wide 
   assert.deepEqual(views, ["room", "desk", "monitor", "room"]);
 });
 
+for (const closeView of ["desk", "monitor"]) {
+  test(`returning from ${closeView} joins the Room pan without a position or rotation cut`, async t => {
+    const { room, advance, pose } = await setup();
+    t.after(() => room.destroy());
+    const runFrames = milliseconds => {
+      while (milliseconds > 0) {
+        const step = Math.min(milliseconds, 16);
+        advance(step);
+        milliseconds -= step;
+      }
+    };
+    // Sample different parts of the pan, including time spent in a close view.
+    for (const wait of [5000, 19000, 36000]) {
+      runFrames(wait);
+      room.transition(closeView);
+      runFrames(1600 + wait);
+      room.transition("room");
+      runFrames(1584);
+      const before = advance(0);
+      const endpoint = advance(16);
+      const orientation = new three.Quaternion().fromArray(pose().rotation);
+      const next = advance(16);
+      const nextOrientation = new three.Quaternion().fromArray(pose().rotation);
+      assert.ok(next.distanceTo(endpoint) < 30, "the first idle frame continues the gentle pan");
+      assert.ok(orientation.angleTo(nextOrientation) < 0.002, "the camera orientation remains continuous");
+      assert.ok(next.clone().sub(endpoint).distanceTo(endpoint.clone().sub(before)) < 0.2, "pan velocity is continuous across the end of the zoom");
+      const later = advance(100);
+      assert.ok(later.distanceTo(next) > 0.1, "automatic Room panning still runs after returning");
+    }
+  });
+}
+
 test("the entire monitor screen fits mobile portrait and landscape viewports after zoom and resize", async t => {
   const { room, advance, scenes, screenPoint, resize, pose } = await setup({ viewportWidth: 390, viewportHeight: 844 });
   t.after(() => room.destroy());
