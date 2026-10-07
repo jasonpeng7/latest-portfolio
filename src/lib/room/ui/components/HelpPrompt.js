@@ -13,5 +13,5 @@ export default function HelpPrompt() {
     const unsubscribe=UIEventBus.on('enterMonitor',hide);
     return () => { clearInterval(timer); document.removeEventListener('mousedown',hide); unsubscribe(); };
   }, []);
-  return text ? <motion.div animate={{ opacity:visible?1:0,y:visible?0:12 }} style={{ position:'absolute',bottom:64,background:'black',padding:'4px 16px',textAlign:'center',display:'flex',alignItems:'flex-end' }}><p>{text}</p><span className="blinking-cursor" style={{marginLeft:8,marginBottom:2}} /></motion.div> : null;
+  return text ? <motion.div className="room-help-prompt" animate={{ opacity:visible?1:0,y:visible?0:12 }} style={{ position:'absolute',background:'black',padding:'4px 16px',textAlign:'center',display:'flex',alignItems:'flex-end' }}><p>{text}</p><span className="blinking-cursor" style={{marginLeft:8,marginBottom:2}} /></motion.div> : null;
 }

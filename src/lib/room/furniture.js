@@ -1,5 +1,29 @@
 import * as THREE from "three";
 
+export function createNightstandLamp() {
+  const lamp = new THREE.Group();
+  lamp.name = "Nightstand lamp";
+  const metal = new THREE.MeshStandardMaterial({ color: 0x292622, roughness: .5, metalness: .55 });
+  const shade = new THREE.MeshStandardMaterial({ color: 0xe8ddc6, roughness: .9, side: THREE.DoubleSide, emissive: 0xffc58a, emissiveIntensity: .5 });
+  shade.name = "Nightstand linen shade";
+  const diffuser = new THREE.MeshBasicMaterial({ color: 0xffdfae, side: THREE.DoubleSide, toneMapped: false });
+  diffuser.name = "Nightstand diffuser";
+  for (const [name, geometry, material, y] of [
+    ["Lamp base", new THREE.CylinderGeometry(205, 220, 55, 32), metal, 27.5],
+    ["Lamp stem", new THREE.CylinderGeometry(22, 22, 520, 16), metal, 315],
+    ["Lamp shade", new THREE.CylinderGeometry(250, 360, 390, 48, 1, true), shade, 740],
+    ["Lamp diffuser", new THREE.CircleGeometry(345, 48), diffuser, 550],
+  ]) {
+    const part = new THREE.Mesh(geometry, material);
+    part.name = name;
+    part.position.y = y;
+    if (name === "Lamp diffuser") part.rotation.x = Math.PI / 2;
+    else if (material === metal) part.castShadow = part.receiveShadow = true;
+    lamp.add(part);
+  }
+  return lamp;
+}
+
 export function createWoodMaterial(finish = "walnut") {
   const isOak = finish === "oak";
   const color = isOak ? [218, 174, 119] : [128, 79, 45];

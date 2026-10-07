@@ -15,12 +15,17 @@ Mobile Computer view fits the tilted screen with padding and updates on resize,
 while the desktop zoom distance stays the same. The chair is hidden in mobile
 Computer view so the wider framing cannot place it in front of the screen;
 it returns in Room and Desk views.
-Walls and floor share a charcoal surface with one continuous warm lighting gradient.
+The driftwood floor has muted grey-brown planks with subtle grain and staggered
+joints. Four warm off-white plaster walls meet it at square edges, trimmed with
+white painted baseboards and a small top cap. The floor stays flat up to the walls.
+The enclosure contains the startup approach and the existing automatic camera
+paths. Manual orbiting can turn through 360 degrees; its distance shortens near a
+wall to keep the viewpoint inside with clearance, and zoom remains bounded.
 Two minimal light oak wood ledges behind the desk hold six textured vinyl sleeves;
 they sit to the monitor's left so both rows are visible from Room and Desk.
 The covers are HEROES & VILLAINS, Graduation, Souled Out, Take Care, 1989 (original
 2014 cover), and petal. Cover source links are in `public/room/textures/vinyl/SOURCES.md`.
-The wall curves smoothly into the floor with no exposed panel edges. Each record
+The record shelves stay attached to the rear wall. Each record
 uses a single textured sleeve mesh, filtered mipmaps, and increased camera depth
 precision to avoid distant depth fighting and texture shimmer.
 The original chair is replaced with a custom Aeron-style black mesh chair, a
@@ -45,6 +50,18 @@ without WebGL. Use START to enter and click the room to approach the desk.
 Camera buttons provide direct room, desk, and computer views. The Desk camera stays
 fixed; click the monitor or COMPUTER to enter the monitor view.
 Escape steps back from the monitor. Sound and free-camera controls are at the top left.
+Click the Fujifilm camera in Room or Desk, or use CAMERA, to lift it off the table
+and turn it around. The viewpoint approaches the rear body and the film plays
+inside its physical LCD using a video texture attached to the camera. The clip
+preloads independently of the room and plays inline, initially muted. Controls
+provide play/pause, sound, replay, and Back. Back or Escape stops playback, reverses
+the turn, lowers the camera onto the table, and returns to the originating view.
+Narrow Desk views keep both the camera and computer visible. Camera framing adapts
+to portrait, landscape, and viewport changes, and respects reduced-motion settings.
+The film and player title are configured in `src/data/film.js`. The supplied
+`IMG_9647 (1).mov` is stored as a browser-compatible H.264/AAC MP4 with fast start
+at `public/films/through-my-lens.mp4`. The redundant Open 2D portfolio corner
+button is hidden on mobile so the initial room prompt stays unobstructed.
 Desktop shortcuts open on double-click or Enter, or one tap on touchscreens.
 Touchscreen shortcuts use larger icons and labels, including inside the 3D CRT.
 Window buttons minimize, maximize,
@@ -149,6 +166,15 @@ OS reference: https://github.com/henryjeff/portfolio-inner-site
 Original 3D license: `src/lib/room/LICENSE.md`.
 The original design acknowledgement remains in the OS Credits window;
 model and license provenance is retained here and in the source attribution files.
+Bed Agape: Render - City, supplied by Jason, licensed CC BY 4.0.
+Source: https://sketchfab.com/3d-models/bed-agape-96ed3f6ba55848809dfa8cd505edddae
+License: http://creativecommons.org/licenses/by/4.0/
+Stored at `public/room/models/Bed/bed_agape.glb`; embedded textures and model metadata
+are retained. The model is scaled and placed beside the desk, with a procedural
+lamp added to its integrated nightstand. Click or tap the lamp to toggle its warm
+light. Its illumination and shadows fade together, independently of the desk light.
+The Don Toliver comic poster above the bed is cleaned from Jason's supplied
+reference; its asset and cleanup prompt are in `public/room/textures/posters/`.
 IBM 5150 workstation: DoZ84. The supplied GLB embeds the source
 https://sketchfab.com/3d-models/ibm-5150-986cafe13c144d0893a405863756f341
 and lists its license as Sketchfab Standard. It is stored at

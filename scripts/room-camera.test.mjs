@@ -19,20 +19,25 @@ const furnitureSource = (await readFile(new URL("../src/lib/room/furniture.js", 
 const workstationBytes = await readFile(new URL("../public/room/models/Computer/ibm_5150.glb", import.meta.url));
 const worldBytes = await readFile(new URL("../public/room/models/World/environment.glb", import.meta.url));
 const decorBytes = await readFile(new URL("../public/room/models/Decor/decor.glb", import.meta.url));
+const bedBytes = await readFile(new URL("../public/room/models/Bed/bed_agape.glb", import.meta.url));
 const modelLoader = new GLTFLoader();
 modelLoader.register(() => ({ name: "TEST_TEXTURES", loadTexture: () => Promise.resolve(new three.Texture()) }));
 
-async function setup({ autoDesktopReady = true, holdLayers = false, viewportWidth = 1200, viewportHeight = 800 } = {}) {
-  let now = 0, frame, camera;
+async function setup({ autoDesktopReady = true, holdLayers = false, viewportWidth = 1200, viewportHeight = 800, reducedMotion = false } = {}) {
+  let now = 0, frame, camera, cssCamera, cssScene;
   let readyCount = 0;
   const pendingLayers = [];
   const listeners = new Map();
   const views = [];
+  let cameraReadyCount = 0;
   const scenes = new Set();
+  let orbit;
   let resizeCallback;
   const element = () => ({
     style: {}, contentWindow: {}, setAttribute() {}, append() {}, remove() {},
-    play: () => Promise.resolve(), pause() {}, load() {}, removeAttribute() {},
+    paused: true, playCount: 0, videoWidth: 1920, videoHeight: 1080,
+    play() { this.paused = false; this.playCount++; return Promise.resolve(); }, pause() { this.paused = true; }, load() {}, removeAttribute() {},
+    addEventListener() {}, removeEventListener() {},
     closest: () => false,
   });
   const iframe = element();
@@ -44,11 +49,14 @@ async function setup({ autoDesktopReady = true, holdLayers = false, viewportWidt
     render(scene, value) { camera = value; scenes.add(scene); }
     dispose() {}
   }
+  class CSSRenderer extends Renderer {
+    render(scene, value) { cssScene = scene; cssCamera = value; scenes.add(scene); }
+  }
   class Loader {
     constructor(manager) { this.manager = manager; }
     loadAsync(url) {
       this.manager?.itemStart(url);
-      const bytes = url.endsWith("ibm_5150.glb") ? workstationBytes : url.endsWith("environment.glb") ? worldBytes : url.endsWith("decor.glb") ? decorBytes : null;
+      const bytes = url.endsWith("ibm_5150.glb") ? workstationBytes : url.endsWith("environment.glb") ? worldBytes : url.endsWith("decor.glb") ? decorBytes : url.endsWith("bed_agape.glb") ? bedBytes : null;
       const pending = bytes ? modelLoader.parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), "") : Promise.resolve(url.endsWith(".glb") ? { scene: new three.Group() } : new three.Texture());
       return pending.then(value => { this.manager?.itemEnd(url); return value; });
     }
@@ -64,7 +72,7 @@ async function setup({ autoDesktopReady = true, holdLayers = false, viewportWidt
     constructor(value) { super(); this.element = value; }
   }
   class Controls {
-    constructor() { this.target = new three.Vector3(); }
+    constructor() { this.target = new three.Vector3(); orbit = this; }
     update() {}
     dispose() {}
   }
@@ -75,19 +83,20 @@ async function setup({ autoDesktopReady = true, holdLayers = false, viewportWidt
     },
     removeEventListener(type) { listeners.delete(type); },
   };
-  const host = { clientWidth: viewportWidth, clientHeight: viewportHeight, append() {}, getBoundingClientRect: () => ({ left: 0, top: 0, width: host.clientWidth, height: host.clientHeight }), ...events };
+  const host = { style: {}, clientWidth: viewportWidth, clientHeight: viewportHeight, append() {}, getBoundingClientRect: () => ({ left: 0, top: 0, width: host.clientWidth, height: host.clientHeight }), ...events };
   const shader = "void main() {}";
   const context = vm.createContext({
     THREE: { ...three, WebGLRenderer: Renderer, TextureLoader: Loader },
-    GLTFLoader: Loader, CSS3DRenderer: Renderer, CSS3DObject: CSSObject,
+    GLTFLoader: Loader, CSS3DRenderer: CSSRenderer, CSS3DObject: CSSObject,
     OrbitControls: Controls,
+    cameraFilm: { src: "/room/textures/monitor/video/real.mp4", title: "Film" },
     steamVertex: shader, steamFragment: shader, grainVertex: shader, grainFragment: shader,
     performance: { now: () => now },
     requestAnimationFrame(callback) { frame = callback; return 1; },
     cancelAnimationFrame() {},
     ResizeObserver: class { constructor(callback) { resizeCallback = callback; } observe() {} disconnect() {} },
     document: { createElement(type) { return type === "iframe" ? iframe : element(); } },
-    window: { devicePixelRatio: 1, location: { origin: "https://portfolio.test" }, ...events },
+    window: { devicePixelRatio: 1, location: { origin: "https://portfolio.test" }, matchMedia: () => ({ matches: reducedMotion }), ...events },
     Audio: class {
       play() { return Promise.resolve(); }
       pause() {}
@@ -101,6 +110,7 @@ async function setup({ autoDesktopReady = true, holdLayers = false, viewportWidt
   const room = context.createRoom(host, {
     onProgress() {}, onReady: () => { readyCount++; resolveReady(); }, onError: rejectReady,
     onView(view) { views.push(view); },
+    onCameraReady() { cameraReadyCount++; },
   });
   if (autoDesktopReady && !holdLayers) await ready;
   else while (!listeners.has("message")) await new Promise(resolve => setImmediate(resolve));
@@ -112,15 +122,21 @@ async function setup({ autoDesktopReady = true, holdLayers = false, viewportWidt
   if (autoDesktopReady && !holdLayers) { room.start(); advance(2500); }
   else advance(0);
   return {
-    room, advance, message, views, scenes,
+    room, advance, message, views, scenes, cameraReadyCount: () => cameraReadyCount,
+    screenRendering: () => ({ camera, cssCamera, cssScene }),
     ready, readyCount: () => readyCount, completeLayers: () => pendingLayers.splice(0).forEach(complete => complete()),
     sendRawMessage: event => listeners.get("message")(event),
     resize: (width, height) => { host.clientWidth = width; host.clientHeight = height; resizeCallback(); advance(0); },
     pose: () => ({ position: camera.position.toArray(), rotation: camera.quaternion.toArray() }),
+    forceOrbit: offset => { camera.position.copy(orbit.target).add(new three.Vector3().fromArray(offset)); advance(16); },
+    orbitTarget: () => orbit.target.clone(),
     move: (clientX, clientY) => listeners.get("pointermove")?.({ clientX, clientY }),
+    pointerDown: (clientX, clientY) => listeners.get("pointerdown")?.({ clientX, clientY }),
+    pointerUp: () => listeners.get("pointerup")?.(),
     click: (clientX = 0, clientY = 0) => listeners.get("click")({ target: element(), clientX, clientY }),
-    screenPoint: (world = [0, 950, 255]) => {
+    screenPoint: world => {
       camera.updateMatrixWorld();
+      if (!world) world = [...scenes].flatMap(scene => scene.children).find(child => child.isMesh && child.material.blending === three.NoBlending).position.toArray();
       const projected = new three.Vector3().fromArray(world).project(camera);
       return [(projected.x + 1) / 2 * host.clientWidth, (1 - projected.y) / 2 * host.clientHeight];
     },
@@ -229,7 +245,7 @@ test("the entire monitor screen fits mobile portrait and landscape viewports aft
     }
   }
   resize(1200,800);
-  assert.equal(pose().position[2], 2250, "the desktop Computer zoom keeps its original distance");
+  assert.equal(pose().position[2] - aperture.position.z, 1995, "the desktop Computer zoom keeps its distance from the relocated monitor");
   assert.equal(chair.visible, true, "normal desktop room geometry is restored after resizing");
   resize(390,844);
   assert.equal(chair.visible, false);
@@ -333,22 +349,29 @@ test("the larger desk has a live shadow receiver and the left paper is removed",
   assert.ok(deskBounds.getSize(new three.Vector3()).x > 7400);
   assert.ok(deskBounds.getSize(new three.Vector3()).z > 3500);
   assert.ok(desk.castShadow && desk.receiveShadow);
+  const wall = meshes.find(mesh => mesh.name === "Vinyl gallery wall");
+  const wallGap = deskBounds.min.z - new three.Box3().setFromObject(wall).max.z;
+  assert.ok(wallGap > 100 && wallGap < 250, "the desk is against the back wall with room for its baseboard and cables");
   const floor = meshes.find(mesh => mesh.name === "Live shadow floor");
   assert.ok(floor.receiveShadow && floor.material.isMeshStandardMaterial && !floor.material.transparent);
   assert.ok(floor.material.polygonOffset, "the replacement floor avoids depth fighting with the original floor");
   assert.ok(!meshes.find(mesh => mesh.name === "Background").material.map, "the outdated baked desk shadow is no longer displayed");
 });
 
-test("the taller plant stays on the floor and clears the enlarged tabletop", async t => {
+test("the taller plant stays on the floor to the right of the bed", async t => {
   const { room, scenes } = await setup();
   t.after(() => room.destroy());
   const meshes = [];
   for (const scene of scenes) scene.traverse(child => { if (child.isMesh) meshes.push(child); });
   const plantBounds = new three.Box3().setFromObject(meshes.find(mesh => mesh.name === "plant"));
   const deskBounds = new three.Box3().setFromObject(meshes.find(mesh => mesh.material.name === "Wood"));
+  const bed = [...scenes].flatMap(scene => scene.children).find(child => child.name === "Bed Agape with integrated nightstand");
+  const bedBounds = new three.Box3().setFromObject(bed);
   assert.ok(plantBounds.getSize(new three.Vector3()).y > 5000);
   assert.ok(Math.abs(plantBounds.min.y + 2986) < 1, "stretching the plant does not lift its pot from the floor");
   assert.ok(plantBounds.min.x > deskBounds.max.x, "the plant clears the larger table");
+  assert.ok(plantBounds.min.x > bedBounds.max.x + 500, "the plant clears the right side of the bed");
+  assert.ok(plantBounds.min.z > -1800 && plantBounds.max.z < bedBounds.max.z, "the plant sits beside the bed toward the back wall");
 });
 
 test("the hanging warm light casts desk shadows in the darker room", async t => {
@@ -365,7 +388,7 @@ test("the hanging warm light casts desk shadows in the darker room", async t => 
   assert.ok(objects.find(object => object.isHemisphereLight).intensity < 0.3, "ambient room lighting is subdued");
 });
 
-test("all six wall records fit in Room and Desk views without the workstation hiding their centers", async t => {
+test("all six wall records fit in Room and remain unobstructed by the workstation in Desk", async t => {
   const { room, advance, scenes, screenPoint, pose } = await setup();
   t.after(() => room.destroy());
   const objects = [];
@@ -376,13 +399,16 @@ test("all six wall records fit in Room and Desk views without the workstation hi
   assert.equal(objects.filter(object => /^Vinyl ledge [12]$/.test(object.name)).length, 2);
   const isVisible = object => { for (let current = object; current; current = current.parent) if (!current.visible) return false; return true; };
   const solidMeshes = objects.filter(object => object.isMesh && isVisible(object) && (object.castShadow || covers.includes(object)));
+  solidMeshes.forEach(object => object.updateWorldMatrix(true, false));
   for (const view of ["room", "desk"]) {
     room.transition(view);
     advance(1600);
     const origin = new three.Vector3().fromArray(pose().position);
     for (const cover of covers) {
       cover.updateWorldMatrix(true, false);
-      for (const corner of [[-480,-480,0],[-480,480,0],[480,-480,0],[480,480,0]]) {
+      // Desk keeps its established camera position when furniture moves; the
+      // closer gallery may extend beyond that view. Room shows every sleeve.
+      for (const corner of view === "room" ? [[-480,-480,0],[-480,480,0],[480,-480,0],[480,480,0]] : []) {
         const point = new three.Vector3().fromArray(corner).applyMatrix4(cover.matrixWorld);
         const [x, y] = screenPoint(point.toArray());
         assert.ok(x >= 0 && x <= 1200 && y >= 0 && y <= 800, `${cover.userData.album} fits inside ${view}`);
@@ -477,20 +503,44 @@ test("the replacement chair is grounded and clear of the desk while the original
   assert.ok(bounds.min.z > new three.Box3().setFromObject(desk).max.z, "the replacement chair does not intersect the desk");
 });
 
-test("the curved backdrop meets the floor without an overlapping panel or old backdrop", async t => {
+test("the original workstation anchors the wall, bed, shelves, and lighting", async t => {
+  const { room, scenes } = await setup();
+  t.after(() => room.destroy());
+  const objects = [...scenes].flatMap(scene => { const result = []; scene.traverse(object => result.push(object)); return result; });
+  const aperture = objects.find(object => object.isMesh && object.material.blending === three.NoBlending);
+  assert.deepEqual(aperture.position.toArray(), [0, 950, 255], "the monitor uses its original absolute position");
+  const wall = objects.find(object => object.name === "Vinyl gallery wall");
+  const desk = new three.Box3().setFromObject(objects.find(object => object.material?.name === "Wood"));
+  assert.ok(desk.min.z - wall.position.z > 150 && desk.min.z - wall.position.z < 200, "the wall keeps the existing cable and baseboard clearance behind the desk");
+  const bed = new three.Box3().setFromObject(objects.find(object => object.name === "Bed Agape with integrated nightstand"));
+  assert.ok(Math.abs(bed.min.z - wall.position.z - 300) < .001, "the bed keeps its clearance from the moved wall");
+  assert.equal(objects.find(object => object.name === "Two-row vinyl gallery").position.z - wall.position.z, 130);
+  assert.equal(objects.find(object => object.name === "Heroes & Villains — Don Toliver comic poster").position.z - wall.position.z, 65);
+  const pendant = objects.find(object => object.name === "Pendant warm light");
+  assert.equal(pendant.position.z, 250, "desk lighting returns to its original position");
+});
+
+test("four warm plaster walls meet the driftwood floor at square white baseboards", async t => {
   const { room, scenes } = await setup();
   t.after(() => room.destroy());
   const objects = [];
   for (const scene of scenes) scene.traverse(child => objects.push(child));
   const wall = objects.find(object => object.name === "Vinyl gallery wall");
   const floor = objects.find(object => object.name === "Live shadow floor");
-  assert.equal(wall.material, floor.material, "curved wall and floor share the same gradient");
-  const positions = wall.geometry.attributes.position;
-  const join = new three.Vector3().fromBufferAttribute(positions, 0);
+  assert.notEqual(wall.material, floor.material, "wood is confined to the horizontal floor");
+  const walls = objects.filter(object => object.material?.name === "Warm off-white plaster");
+  assert.equal(walls.length,4);
+  const wallBounds = new three.Box3().setFromObject(wall);
   const floorBounds = new three.Box3().setFromObject(floor);
-  assert.ok(Math.abs(join.y - floorBounds.min.y) < 1);
-  assert.ok(Math.abs(join.z - floorBounds.min.z) < 1, "the surfaces meet edge to edge without a coplanar overlap");
-  assert.ok(positions.count > 4, "the join has a rounded cross section");
+  assert.ok(Math.abs(wallBounds.min.y - floorBounds.min.y) < 1);
+  assert.ok(Math.abs(wallBounds.min.z - floorBounds.min.z) < 1, "the wall meets the edge of the flat floor");
+  const trims = objects.filter(object => object.name.endsWith(" baseboard"));
+  assert.equal(trims.length,4);
+  for (const trim of trims) {
+    const bounds = new three.Box3().setFromObject(trim);
+    assert.ok(Math.abs(bounds.min.y - floorBounds.min.y) < 1,"baseboards sit directly on the floor");
+    assert.ok(bounds.max.y - bounds.min.y > 200);
+  }
   assert.ok(!objects.find(object => object.name === "Background").visible);
 });
 
@@ -517,6 +567,33 @@ test("the WebGL monitor aperture reveals the desktop instead of compositing whit
   assert.deepEqual(rgb, [0, 0, 0], "transparent WebGL pixels add no white over the embedded desktop");
 });
 
+test("the embedded screen keeps a clickable CSS depth and aligns with the CRT through every view", async t => {
+  const { room, advance, resize, scenes, screenRendering } = await setup();
+  t.after(() => room.destroy());
+  const aperture = [...scenes].flatMap(scene => scene.children).find(child => child.isMesh && child.material.blending === three.NoBlending);
+  for (const [width, height] of [[1200, 800], [390, 844], [844, 390]]) {
+    resize(width, height);
+    for (const view of ["room", "desk", "monitor", "camera"]) {
+      room.transition(view);
+      for (const duration of [800, 800]) {
+        advance(duration);
+        const { camera, cssCamera, cssScene } = screenRendering();
+        cssScene.updateMatrixWorld(true);
+        camera.updateMatrixWorld(true);
+        cssCamera.updateMatrixWorld(true);
+        aperture.updateMatrixWorld(true);
+        const screen = cssScene.children.find(child => child.element);
+        assert.ok(screen.getWorldPosition(new three.Vector3()).z > 0, "the CSS screen stays ahead of its containing plane for pointer hit tests");
+        for (const [x, y] of [[-640, -452], [640, -452], [640, 452], [-640, 452], [0, 0]]) {
+          const cssPoint = new three.Vector3(x, y, 0).applyMatrix4(screen.matrixWorld).project(cssCamera);
+          const webglPoint = new three.Vector3(x, y, 0).applyMatrix4(aperture.matrixWorld).project(camera);
+          assert.ok(cssPoint.distanceTo(webglPoint) < 1e-9, `${view} at ${width}×${height}: the interactive screen matches the WebGL aperture`);
+        }
+      }
+    }
+  }
+});
+
 test("the settled Desk camera stays fixed as the cursor moves", async t => {
   const { room, advance, pose, move } = await setup();
   t.after(() => room.destroy());
@@ -537,4 +614,232 @@ test("Escape from the embedded desktop still returns Computer to Desk", async t 
   advance(1600);
   message("exitMonitor");
   assert.equal(views.at(-1), "desk");
+});
+
+for (const [viewportWidth, viewportHeight] of [[1440,900],[390,844],[844,390]]) {
+  test(`camera click opens a fitted close-up and returns smoothly at ${viewportWidth}×${viewportHeight}`, async t => {
+    const context = await setup({ viewportWidth, viewportHeight });
+    const { room, scenes, advance, click, screenPoint, views, cameraReadyCount, pose } = context;
+    t.after(() => room.destroy());
+    room.transition("desk");
+    advance(1600);
+    const desk = advance(0);
+    const prop = [...scenes].flatMap(scene => scene.children).find(object => object.name.startsWith("Fujifilm"));
+    const bounds = new three.Box3().setFromObject(prop);
+    const [cameraX, cameraY] = screenPoint(bounds.getCenter(new three.Vector3()).toArray());
+    assert.ok(cameraX > 0 && cameraX < viewportWidth && cameraY > 0 && cameraY < viewportHeight, "the camera can actually be tapped inside the Desk viewport");
+    click(cameraX, cameraY);
+    assert.equal(views.at(-1), "camera", "the camera's own hit target wins over the desk background");
+    const restPosition = prop.position.clone();
+    const restRotation = prop.quaternion.clone();
+    assert.equal(cameraReadyCount(), 0, "playback waits for the lift and turn");
+    const halfway = advance(1050);
+    assert.ok(halfway.distanceTo(desk) > 0, "the approach moves progressively");
+    assert.ok(prop.position.y > restPosition.y + 300, "the camera lifts clear of the tabletop");
+    assert.ok(prop.quaternion.angleTo(restRotation) > .1, "the physical camera turns");
+    advance(1050);
+    assert.equal(cameraReadyCount(), 1);
+    const rearDirection = new three.Vector3(0,0,-1).applyQuaternion(prop.quaternion);
+    assert.ok(rearDirection.z > .99, "the rear LCD faces the viewer");
+    const lcd = prop.getObjectByName("Camera LCD playback");
+    assert.ok(lcd.material.map.isVideoTexture, "the actual LCD plays the video texture");
+    assert.equal(lcd.material.map.image.paused,false);
+    assert.equal(lcd.parent,prop, "the playback surface follows the physical camera");
+    prop.updateMatrixWorld(true);
+    for (const x of [-64/2,64/2]) for (const y of [-37/2,37/2]) {
+      const world = lcd.localToWorld(new three.Vector3(x,y,0));
+      const [px, py] = screenPoint(world.toArray());
+      assert.ok(px > viewportWidth*.05 && px < viewportWidth*.95 && py > viewportHeight*.05 && py < viewportHeight*.95, "the rear LCD fits with padding");
+    }
+    const beforeResize = pose();
+    context.resize(viewportHeight, viewportWidth);
+    assert.deepEqual(pose(), beforeResize, "orientation changes do not cut the current pose");
+    advance(550);
+    room.closeCamera();
+    assert.equal(views.at(-1), "desk");
+    assert.equal(lcd.material.map.image.paused,true, "closing stops the film immediately");
+    const from = advance(0);
+    assert.ok(advance(650).distanceTo(from) > 0, "closing animates back instead of snapping");
+    advance(650);
+    assert.ok(prop.position.distanceTo(restPosition) < .001, "the camera lands at its original table position");
+    assert.ok(prop.quaternion.angleTo(restRotation) < .001, "the original angle is restored");
+  });
+}
+
+test("camera approach can be cancelled without starting the film or stranding the camera", async t => {
+  const { room, scenes, advance, cameraReadyCount, views } = await setup();
+  t.after(() => room.destroy());
+  const prop = [...scenes].flatMap(scene => scene.children).find(object => object.name.startsWith("Fujifilm"));
+  const rest = prop.position.clone(), rotation = prop.quaternion.clone();
+  room.transition("camera",1300);
+  advance(300);
+  room.closeCamera();
+  advance(1300);
+  assert.equal(views.at(-1), "room", "return to the view from which the film was opened");
+  assert.equal(cameraReadyCount(),0);
+  assert.ok(prop.position.distanceTo(rest) < .001);
+  assert.ok(prop.quaternion.angleTo(rotation) < .001);
+  assert.equal(prop.getObjectByName("Camera LCD playback").material.map.image.playCount,0);
+});
+
+test("LCD controls pause, replay, mute, and stop when switching views", async t => {
+  const { room, scenes, advance } = await setup();
+  t.after(() => room.destroy());
+  const prop = [...scenes].flatMap(scene => scene.children).find(object => object.name.startsWith("Fujifilm"));
+  const video = prop.getObjectByName("Camera LCD playback").material.map.image;
+  room.transition("camera");
+  room.toggleFilm();
+  assert.equal(video.playCount,0,"controls cannot start playback while the camera is turning");
+  advance(2100);
+  assert.equal(video.playCount,1);
+  room.toggleFilm();
+  assert.equal(video.paused,true);
+  video.currentTime=12;
+  room.replayFilm();
+  assert.equal(video.currentTime,0);
+  assert.equal(video.paused,false);
+  room.toggleFilmMute();
+  assert.equal(video.muted,false);
+  room.setMuted(true);
+  assert.equal(video.muted,true,"room mute also mutes LCD playback");
+  room.transition("monitor");
+  assert.equal(video.paused,true);
+});
+
+test("reduced motion reaches the film without a long camera animation", async t => {
+  const { room, advance, cameraReadyCount } = await setup({ reducedMotion:true });
+  t.after(() => room.destroy());
+  room.transition("camera",1300);
+  advance(1);
+  assert.equal(cameraReadyCount(),1);
+});
+
+test("manual orbit stays inside all four walls across a full turn and cannot zoom through them", async t => {
+  const { room, scenes, advance, forceOrbit, orbitTarget, pose } = await setup();
+  t.after(() => room.destroy());
+  const walls = [...scenes].flatMap(scene => scene.children).filter(object => object.material?.name === "Warm off-white plaster");
+  const bounds = new three.Box3();
+  walls.forEach(wall => bounds.union(new three.Box3().setFromObject(wall)));
+  room.transition("free");
+  advance(1600);
+  for (let step=0; step<32; step++) {
+    const angle = step / 32 * Math.PI * 2;
+    forceOrbit([Math.sin(angle)*70000,12000,Math.cos(angle)*70000]);
+    const position = new three.Vector3().fromArray(pose().position);
+    assert.ok(position.x > bounds.min.x+500 && position.x < bounds.max.x-500);
+    assert.ok(position.z > bounds.min.z+500 && position.z < bounds.max.z-500);
+    assert.ok(position.y > bounds.min.y+500 && position.y < bounds.max.y-500);
+    const target = orbitTarget();
+    assert.ok(position.distanceTo(target) <= 29000.001, "the zoom limit still applies");
+    const hits = new three.Raycaster(position,target.clone().sub(position).normalize()).intersectObjects(walls);
+    assert.ok(!hits.length || hits[0].distance > position.distanceTo(target),"no wall comes between the viewpoint and the orbit target");
+  }
+  room.transition("desk");
+  advance(1600);
+  assert.deepEqual(pose().position,[0,1800,6000],"restoring the desk does not translate the existing Desk viewpoint");
+});
+
+test("the initial approach and automatic room pan keep the original path and room center inside the enclosure", async t => {
+  const { room, scenes, advance, pose, screenRendering } = await setup();
+  t.after(() => room.destroy());
+  const walls = [...scenes].flatMap(scene => scene.children).filter(object => object.material?.name === "Warm off-white plaster");
+  const bounds = new three.Box3();
+  walls.forEach(wall => bounds.union(new three.Box3().setFromObject(wall)));
+  assert.ok(bounds.containsPoint(new three.Vector3(-35000,35000,35000)),"the startup camera begins inside the room");
+  for (let frame=0;frame<320;frame++) {
+    advance(100);
+    assert.ok(bounds.containsPoint(new three.Vector3().fromArray(pose().position)),"the automatic Room pan remains inside the walls");
+    const { camera } = screenRendering();
+    assert.equal(camera.position.z, 20000, "the existing Room path does not move with the furniture");
+    const centeredDirection = new three.Vector3(0, -1000, 0).sub(camera.position).normalize();
+    assert.ok(camera.getWorldDirection(new three.Vector3()).dot(centeredDirection) > 1 - 1e-10, "Room continues looking at the original center");
+  }
+});
+
+test("the supplied bed rests on the floor to the right and its lamp sits on the integrated nightstand", async t => {
+  const { room, scenes } = await setup();
+  t.after(() => room.destroy());
+  const objects = [];
+  for (const scene of scenes) scene.traverse(child => objects.push(child));
+  const bed = objects.find(object => object.name === "Bed Agape with integrated nightstand");
+  const bounds = new three.Box3().setFromObject(bed);
+  const plant = new three.Box3().setFromObject(objects.find(object => object.name === "plant"));
+  assert.ok(Math.abs(bounds.min.y + 2975) < 1, "bed is grounded");
+  assert.ok(plant.min.x > bounds.max.x + 250, "plant clears the bed's right side");
+  assert.ok(bounds.min.z > -1800, "headboard clears the back wall");
+  assert.ok(objects.some(object => object.material?.name === "fabric" && object.material.map), "supplied fabric textures are retained");
+  const lamp = objects.find(object => object.name === "Nightstand lamp");
+  const top = bed.getObjectByName("Object_2").localToWorld(new three.Vector3(215,195.6,38.49));
+  assert.ok(lamp.position.distanceTo(top) < .001, "lamp rests on the actual nightstand top");
+  const bedside = objects.find(object => object.name === "Nightstand warm light");
+  const pendant = objects.find(object => object.name === "Pendant warm light");
+  assert.ok(bedside.color.equals(pendant.color), "both lamps use the same warm light color");
+  assert.equal(bedside.penumbra, pendant.penumbra);
+  assert.ok(bedside.distance < pendant.distance, "the bedside light covers a smaller area");
+});
+
+for (const [viewportWidth,viewportHeight] of [[1280,720],[390,844]]) {
+  test(`the nightstand lamp toggles smoothly without changing views at ${viewportWidth}×${viewportHeight}`, async t => {
+    const { room, scenes, advance, screenPoint, click, pointerDown, move, pointerUp, views } = await setup({ viewportWidth, viewportHeight });
+    t.after(() => room.destroy());
+    const objects = [];
+    for (const scene of scenes) scene.traverse(child => objects.push(child));
+    const lamp = objects.find(object => object.name === "Nightstand lamp");
+    const light = objects.find(object => object.name === "Nightstand warm light");
+    const point = lamp.position.clone().add(new three.Vector3(0,740,0));
+    const pixel = screenPoint(point.toArray());
+    assert.ok(pixel[0] >= 0 && pixel[0] <= viewportWidth && pixel[1] >= 0 && pixel[1] <= viewportHeight, "the tested lamp click is inside the viewport");
+    click(...pixel);
+    advance(225);
+    assert.ok(light.intensity > 0 && light.intensity < 2.5, "physical lamp click fades the light");
+    advance(225);
+    assert.equal(light.intensity,0);
+    assert.equal(light.visible,true, "the zero-intensity light keeps shadow ordering stable throughout the fade");
+    assert.deepEqual(views,["room"], "lamp click does not start a desk zoom");
+    room.toggleLamp();
+    advance(450);
+    assert.equal(light.intensity,2.5, "the lamp can be switched back on");
+    const nextPixel = screenPoint(point.toArray());
+    pointerDown(nextPixel[0]-30,nextPixel[1]);
+    move(...nextPixel);
+    pointerUp();
+    click(...nextPixel);
+    advance(450);
+    assert.equal(light.intensity,2.5,"dragging onto the lamp does not toggle it");
+    const floor = objects.find(object => object.name === "Live shadow floor");
+    const wall = objects.find(object => object.name === "Vinyl gallery wall");
+    const compile = material => {
+      const shader = { uniforms: {}, vertexShader: '#include <worldpos_vertex>', fragmentShader: '#include <shadowmap_pars_fragment>\nvec3 outgoingLight = totalDiffuse + totalSpecular + totalEmissiveRadiance;' };
+      material.onBeforeCompile(shader); return shader;
+    };
+    const floorShader = compile(floor.material), wallShader = compile(wall.material);
+    room.toggleLamp(); advance(450);
+    assert.equal(floorShader.uniforms.uLampGlow.value,0, "floor glow switches off with the light");
+    assert.equal(wallShader.uniforms.uLampGlow.value,0, "wall glow switches off with the light");
+    room.toggleLamp(); advance(225);
+    const partial = light.intensity;
+    assert.ok(partial > 0 && partial < 2.5);
+    assert.ok(Math.abs(floorShader.uniforms.uLampGlow.value - partial / 2.5) < .00001, "floor illumination follows the same fade as the light");
+    room.toggleLamp(); advance(0);
+    assert.equal(light.intensity,partial,"a second click during the fade resumes from the current light level");
+    advance(450);
+    assert.equal(light.intensity,0);
+  });
+}
+
+test("the larger bed has a framed comic poster above its headboard and no added left wall", async t => {
+  const { room, scenes } = await setup();
+  t.after(() => room.destroy());
+  const objects = [];
+  for (const scene of scenes) scene.traverse(child => objects.push(child));
+  assert.ok(!objects.some(object => object.name === "Visible left wall" || object.name === "Left return trim"));
+  const bed = objects.find(object => object.name === "Bed Agape with integrated nightstand");
+  const bedBounds = new three.Box3().setFromObject(bed);
+  assert.ok(bedBounds.getSize(new three.Vector3()).z > 8900, "the bed is about 20 percent larger than before");
+  const poster = objects.find(object => object.name === "Heroes & Villains — Don Toliver comic poster");
+  const posterBounds = new three.Box3().setFromObject(poster);
+  assert.ok(posterBounds.min.y > bedBounds.max.y + 500, "the frame clears the headboard");
+  assert.ok(posterBounds.min.x > bedBounds.min.x && posterBounds.max.x < bedBounds.max.x, "the poster fits above the bed");
+  assert.ok(posterBounds.min.z > -1800 && posterBounds.max.z < -1650, "the frame is mounted against the back wall");
+  assert.ok(objects.find(object => object.name === "Don Toliver comic artwork").material.map, "the poster uses the cleaned supplied artwork");
 });
