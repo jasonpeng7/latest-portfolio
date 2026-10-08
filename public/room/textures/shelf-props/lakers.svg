@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="320" viewBox="0 0 512 320">
+  <circle cx="257" cy="162" r="114" fill="#fdb927" stroke="#fff5d4" stroke-width="6"/>
+  <g fill="none" stroke="#552583" stroke-width="5"><path d="M144 162h226M256 48v226M174 82q160 80 0 161M337 82q-160 80 0 161"/></g>
+  <text x="256" y="151" text-anchor="middle" fill="#552583" stroke="#fff5d4" stroke-width="2" paint-order="stroke" font-family="Arial,sans-serif" font-style="italic" font-weight="bold" font-size="31">LOS ANGELES</text>
+  <text x="256" y="207" text-anchor="middle" fill="#552583" stroke="#fff5d4" stroke-width="4" paint-order="stroke" font-family="Arial,sans-serif" font-style="italic" font-weight="900" font-size="76">LAKERS</text>
+</svg>

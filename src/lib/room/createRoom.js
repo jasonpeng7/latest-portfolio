@@ -5,10 +5,11 @@ import { CSS3DObject, CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRe
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { steamVertex, steamFragment, grainVertex, grainFragment } from "./shaders";
 import { fitWorkstation } from "./fitWorkstation";
-import { createWoodMaterial, createAeronChair, createFujifilmCamera, createNightstandLamp } from "./furniture";
+import { createWoodMaterial, createWovenMaterial, createAeronChair, createFujifilmCamera, createNightstandLamp, createFloatingShelves } from "./furniture";
+import { createInteractiveTrashCan } from "./trashCan";
 import { cameraFilm } from "../../data/film";
 
-export function createRoom(host, { onProgress, onReady, onError, onView, onCameraReady, onFilmState }) {
+export function createRoom(host, { onProgress, onReady, onError, onView, onCameraReady, onFilmState, onVinylState }) {
   const scene = new THREE.Scene();
   const cssScene = new THREE.Scene();
   // Keep depth precision around the furniture instead of reserving it for a
@@ -17,7 +18,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.9;
+  renderer.toneMappingExposure = 1.05;
   renderer.setClearColor(0x000000, 0);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -62,6 +63,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
   let view = "loading", tween, frame, disposed = false, elapsed = 0;
   let ready = false, lastTime = performance.now(), steam, dimmer, chair;
   let plant, placedBedBounds;
+  let placedDeskBounds, floatingShelves, bedBaseMaterial, shelfLabelMaps;
   let muted = false;
   const audio = new Map();
   const videos = [];
@@ -70,6 +72,11 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
   const monitorTargets = [];
   const cameraTargets = [];
   let nightstandLamp, lampHitArea, lampLight, lampOn = true, lampTween;
+  let trashCan;
+  let vinylGallery, vinylBounds, activeVinyl, vinylTween, vinylReturnView = "room";
+  const vinylTargets = [], vinylCovers = [];
+  let vinylAlbums = [];
+  const vinylState = ready => onVinylState?.({ albums: vinylAlbums, selected: view === "vinyl" ? activeVinyl?.userData.index ?? null : null, ready });
   const lampGlow = { value: 1 };
   const lampCenter = { value: new THREE.Vector3() };
   // Each shadow only attenuates the illumination from its own light. Keeping
@@ -111,20 +118,20 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
   let height = 1024;
   const screenPosition = new THREE.Vector3(0, 950, 255);
   const screenRotation = new THREE.Euler(-3 * THREE.MathUtils.DEG2RAD, 0, 0);
-  scene.add(new THREE.HemisphereLight(0xbfc9df, 0x302219, 0.22));
-  const keyLight = new THREE.DirectionalLight(0xffe7c6, 0.2);
+  scene.add(new THREE.HemisphereLight(0xf3f5fa, 0xb3a38b, 0.6));
+  const keyLight = new THREE.DirectionalLight(0xfff4e3, 0.65);
   keyLight.position.set(-3500, 6500, 7300);
   keyLight.target.position.z = 2300;
   scene.add(keyLight, keyLight.target);
-  const fillLight = new THREE.DirectionalLight(0xcadfff, 0.1);
+  const fillLight = new THREE.DirectionalLight(0xdce8f5, 0.22);
   fillLight.position.set(3500, 2000, 1300);
   fillLight.target.position.z = 2300;
   scene.add(fillLight, fillLight.target);
   // An opaque floor replaces the obsolete baked desk shadow. The enlarged desk
   // casts its real silhouette here from the pendant's light.
-  const roomMaterial = new THREE.MeshStandardMaterial({ color: 0x343330, roughness: 1, metalness: 0, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -4 });
-  roomMaterial.name = "Driftwood floor";
-  // World-space driftwood planks remain horizontal all the way to the baseboards.
+  const roomMaterial = new THREE.MeshStandardMaterial({ color: 0xcdb592, roughness: 0.85, metalness: 0, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -4 });
+  roomMaterial.name = "Natural oak floor";
+  // Long, lightly grained oak boards continue to the room's square edges.
   roomMaterial.onBeforeCompile = shader => {
     shader.uniforms.uLampGlow = lampGlow;
     shader.uniforms.uLampCenter = lampCenter;
@@ -135,7 +142,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
       uniform vec3 uRoomGlowCenter;
       uniform vec3 uLampCenter;
       uniform float uLampGlow;
-      float driftwoodHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+      float oakHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
     ` + shader.fragmentShader;
     shader.fragmentShader = shader.fragmentShader.replace("#include <shadowmap_pars_fragment>", "#include <shadowmap_pars_fragment>\n" + surfaceShadows);
     shader.fragmentShader = shader.fragmentShader.replace("vec3 outgoingLight = totalDiffuse + totalSpecular + totalEmissiveRadiance;", `
@@ -143,26 +150,26 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
       vec2 roomHorizontal = roomOffset.xz / 10500.0;
       float roomVertical = roomOffset.y / 18000.0;
       float roomGlow = exp(-dot(roomHorizontal, roomHorizontal) - roomVertical * roomVertical);
-      vec3 roomAmbient = vec3(0.14);
-      vec3 roomWarmPool = vec3(0.34, 0.27, 0.205) * roomGlow;
+      vec3 roomAmbient = vec3(0.48, 0.49, 0.5);
+      vec3 roomWarmPool = vec3(0.11, 0.085, 0.065) * roomGlow;
       vec2 lampOffset = (vRoomWorldPosition.xz - uLampCenter.xz) / 2800.0;
-      vec3 lampPool = vec3(0.42, 0.30, 0.18) * exp(-dot(lampOffset, lampOffset)) * uLampGlow;
-      float boardRow = floor(vRoomWorldPosition.x / 520.0);
-      vec2 plankUV = vec2(vRoomWorldPosition.x / 520.0, vRoomWorldPosition.z / 3600.0 + driftwoodHash(vec2(boardRow, 7.0)));
+      vec3 lampPool = vec3(0.18, 0.13, 0.08) * exp(-dot(lampOffset, lampOffset)) * uLampGlow;
+      float boardRow = floor(vRoomWorldPosition.x / 680.0);
+      vec2 plankUV = vec2(vRoomWorldPosition.x / 680.0, vRoomWorldPosition.z / 5400.0 + oakHash(vec2(boardRow, 7.0)));
       vec2 plankID = floor(plankUV);
       vec2 withinPlank = fract(plankUV);
-      float weathering = 0.98 + 0.05 * sin(withinPlank.x * 15.0 + sin(vRoomWorldPosition.z * 0.0013));
+      float woodTone = 0.99 + 0.025 * sin(withinPlank.x * 15.0 + sin(vRoomWorldPosition.z * 0.0013));
       float grainPhase = vRoomWorldPosition.x * 0.18 + 1.8 * sin(vRoomWorldPosition.z * 0.0014 + boardRow);
       float grainVisibility = 1.0 - smoothstep(5000.0, 26000.0, distance(cameraPosition, vRoomWorldPosition));
-      float grain = pow(0.5 + 0.5 * sin(grainPhase), 8.0) * 0.06 * grainVisibility;
-      float edge = min(min(withinPlank.x, 1.0 - withinPlank.x), min(withinPlank.y, 1.0 - withinPlank.y) * 6.92);
-      float seam = mix(0.82, 1.0, smoothstep(0.0, 0.007, edge));
-      float boardTone = mix(0.88, 1.08, driftwoodHash(plankID));
-      vec3 driftwood = vec3(0.46, 0.43, 0.38) * boardTone * (weathering - grain) * seam;
-      vec3 outgoingLight = driftwood * (roomAmbient + roomWarmPool * pendantVisibility() + lampPool * bedsideVisibility());
+      float grain = pow(0.5 + 0.5 * sin(grainPhase), 8.0) * 0.035 * grainVisibility;
+      float edge = min(min(withinPlank.x, 1.0 - withinPlank.x), min(withinPlank.y, 1.0 - withinPlank.y) * 7.94);
+      float seam = mix(0.9, 1.0, smoothstep(0.0, 0.004, edge));
+      float boardTone = mix(0.96, 1.04, oakHash(plankID));
+      vec3 oak = vec3(0.62, 0.51, 0.39) * boardTone * (woodTone - grain) * seam;
+      vec3 outgoingLight = oak * (roomAmbient + roomWarmPool * pendantVisibility() + lampPool * bedsideVisibility());
     `);
   };
-  roomMaterial.customProgramCacheKey = () => "driftwood-floor-v5";
+  roomMaterial.customProgramCacheKey = () => "natural-oak-floor-v1";
   materials.add(roomMaterial);
   const roomWidth = roomBounds.right - roomBounds.left, roomDepth = roomBounds.front - roomBounds.back;
   const floorShadow = new THREE.Mesh(new THREE.PlaneGeometry(roomWidth, roomDepth), roomMaterial);
@@ -171,7 +178,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
   floorShadow.position.set(0, roomBounds.floor, (roomBounds.front + roomBounds.back) / 2);
   floorShadow.receiveShadow = true;
   scene.add(floorShadow);
-  const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xece9e1, roughness: .95, metalness: 0 });
+  const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xf5f1e8, roughness: .9, metalness: 0 });
   wallMaterial.name = "Warm off-white plaster";
   wallMaterial.onBeforeCompile = shader => {
     shader.uniforms.uLampGlow = lampGlow;
@@ -185,16 +192,18 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
       vec3 wallOffset = (vWallPosition - uWallGlowCenter) / vec3(13000.0, 18000.0, 16000.0);
       float wallGlow = exp(-dot(wallOffset, wallOffset));
       vec3 lampOffset = (vWallPosition - uLampCenter) / vec3(3100.0, 2500.0, 3100.0);
-      vec3 lampPool = vec3(0.18, 0.12, 0.065) * exp(-dot(lampOffset, lampOffset)) * uLampGlow;
-      vec3 outgoingLight = diffuseColor.rgb * (vec3(0.43) + vec3(0.10, 0.085, 0.065) * wallGlow * pendantVisibility() + lampPool * bedsideVisibility());
+      vec3 lampPool = vec3(0.085, 0.06, 0.035) * exp(-dot(lampOffset, lampOffset)) * uLampGlow;
+      float plaster = 0.992 + 0.008 * sin(vWallPosition.x * 0.0008 + sin(vWallPosition.y * 0.0012));
+      vec3 outgoingLight = diffuseColor.rgb * plaster * (vec3(0.67, 0.68, 0.69) + vec3(0.05, 0.04, 0.025) * wallGlow * pendantVisibility() + lampPool * bedsideVisibility());
     `);
   };
-  wallMaterial.customProgramCacheKey = () => "warm-plaster-v3";
+  wallMaterial.customProgramCacheKey = () => "daylight-limewash-v1";
   materials.add(wallMaterial);
-  const trimMaterial = new THREE.MeshStandardMaterial({ color: 0xfaf9f5, roughness: .6, metalness: 0, emissive: 0xfaf9f5, emissiveIntensity: .43 });
+  const trimMaterial = new THREE.MeshStandardMaterial({ color: 0xf5f1e8, roughness: .8, metalness: 0, emissive: 0xf5f1e8, emissiveIntensity: .08 });
   trimMaterial.name = "White painted baseboard";
   materials.add(trimMaterial);
   const wallHeight = roomBounds.top - roomBounds.floor;
+  const featureWidth = 11700, featureLeft = 4150;
   for (const [name, span, x, z, rotation] of [
     ["Vinyl gallery wall", roomWidth, 0, roomBounds.back, 0],
     ["Front room wall", roomWidth, 0, roomBounds.front, Math.PI],
@@ -211,14 +220,59 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
     trim.name = `${name} baseboard`;
     trim.position.set(x, roomBounds.floor, z);
     trim.rotation.y = rotation;
-    for (const [height, depth, y] of [[210, 60, 105], [14, 72, 217]]) {
-      const profile = new THREE.Mesh(new THREE.BoxGeometry(span, height, depth), trimMaterial);
-      profile.position.set(0, y, depth / 2);
-      profile.receiveShadow = true;
-      trim.add(profile);
+    const trimSpans = name === "Vinyl gallery wall"
+      ? [[roomBounds.left, featureLeft], [featureLeft + featureWidth, roomBounds.right]]
+      : [[-span / 2, span / 2]];
+    for (const [left, right] of trimSpans) {
+      for (const [height, depth, y] of [[210, 60, 105], [14, 72, 217]]) {
+        const profile = new THREE.Mesh(new THREE.BoxGeometry(right - left, height, depth), trimMaterial);
+        profile.position.set((left + right) / 2, y, depth / 2);
+        profile.receiveShadow = true;
+        trim.add(profile);
+      }
     }
     scene.add(trim);
   }
+  // One instanced draw keeps the closely spaced architectural battens inexpensive.
+  const featureWall = new THREE.Group();
+  featureWall.name = "Vertical oak feature wall";
+  const backingMaterial = new THREE.MeshStandardMaterial({ color: 0x463b2f, roughness: 1 });
+  const backing = new THREE.Mesh(new THREE.BoxGeometry(featureWidth, wallHeight, 18), backingMaterial);
+  backing.position.set(featureLeft + featureWidth / 2, roomBounds.floor + wallHeight / 2, roomBounds.back + 10);
+  backing.receiveShadow = true;
+  featureWall.add(backing);
+  const oakMaterial = createWoodMaterial("smoked-oak");
+  oakMaterial.map.center.set(0.5, 0.5);
+  oakMaterial.map.rotation = Math.PI / 2;
+  oakMaterial.roughness = 0.88;
+  const slatCount = 87;
+  const slats = new THREE.InstancedMesh(new THREE.BoxGeometry(91, wallHeight, 44), oakMaterial, slatCount);
+  slats.name = "Oak wall battens";
+  const slatTransform = new THREE.Matrix4();
+  for (let index = 0; index < slatCount; index++) {
+    slatTransform.makeTranslation(featureLeft + (index + 0.5) * featureWidth / slatCount, roomBounds.floor + wallHeight / 2, roomBounds.back + 40);
+    slats.setMatrixAt(index, slatTransform);
+  }
+  slats.castShadow = slats.receiveShadow = true;
+  featureWall.add(slats);
+  materials.add(backingMaterial);
+  materials.add(oakMaterial);
+  textures.add(oakMaterial.map);
+  scene.add(featureWall);
+  const textile = createWovenMaterial();
+  textile.onBeforeCompile = shader => {
+    shader.fragmentShader = shader.fragmentShader.replace("#include <shadowmap_pars_fragment>", "#include <shadowmap_pars_fragment>\n" + surfaceShadows);
+    shader.fragmentShader = shader.fragmentShader.replace("vec3 outgoingLight = totalDiffuse + totalSpecular + totalEmissiveRadiance;", "vec3 outgoingLight = diffuseColor.rgb * (vec3(0.68) + vec3(0.17) * pendantVisibility());");
+  };
+  textile.customProgramCacheKey = () => "ivory-daylight-textile-v1";
+  materials.add(textile);
+  textures.add(textile.map);
+  const rug = new THREE.Mesh(new THREE.PlaneGeometry(8500, 5500), textile);
+  rug.name = "Ivory woven area rug";
+  rug.position.set(450, roomBounds.floor + 4, 5050);
+  rug.rotation.x = -Math.PI / 2;
+  rug.receiveShadow = true;
+  scene.add(rug);
   const pendant = new THREE.Group();
   pendant.name = "Warm hanging pendant";
   pendant.position.set(95, 4800, 250);
@@ -260,7 +314,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
   scene.add(pendantLight, pendantLight.target);
   const compactViewport = () => host.clientWidth <= 768 || host.clientHeight <= 500;
   const syncViewVisibility = () => {
-    if (chair) chair.visible = !(["monitor", "camera"].includes(view) && compactViewport());
+    if (chair) chair.visible = !(["monitor", "camera", "shelves", "vinyl"].includes(view) && compactViewport());
   };
   const monitorPosition = () => {
     let z = Math.max(2250, 1400 + host.clientHeight / host.clientWidth * 1200);
@@ -305,15 +359,32 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
     }
     return { position: new THREE.Vector3(x, 1800, z), focal: new THREE.Vector3(x, 500, 0) };
   };
+  const vinylLiftPosition = () => vinylBounds.getCenter(new THREE.Vector3()).add(new THREE.Vector3(0, 0, 2100));
+  const vinylFrame = closeup => {
+    if (!vinylBounds) return { position: position.clone(), focal: focal.clone() };
+    const center = closeup ? vinylLiftPosition() : vinylBounds.getCenter(new THREE.Vector3());
+    const size = closeup ? new THREE.Vector3(960, 960, 24) : vinylBounds.getSize(new THREE.Vector3());
+    const tangent = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    const distance = Math.max(size.x / (2 * tangent * camera.aspect * .85), size.y / (2 * tangent * .65)) + 150;
+    const target = center.clone().add(new THREE.Vector3(0, -size.y * .18, 0));
+    return { position: target.clone().add(new THREE.Vector3(0, 0, distance)), focal: target };
+  };
   const keyframes = () => ({
     room: { position: roomPosition(), focal: new THREE.Vector3(0, -1000, 0) },
     desk: deskFrame(),
     monitor: { position: monitorPosition(), focal: new THREE.Vector3(0, 950, 0) },
     free: { position: new THREE.Vector3(-15000, 10000, 15000), focal: new THREE.Vector3(-100, 350, 0) },
     camera: photoCamera ? cameraFrame() : { position: position.clone(), focal: focal.clone() },
+    shelves: vinylFrame(false),
+    vinyl: vinylFrame(true),
   });
   function transition(next, duration = next === "camera" ? 2100 : 1600) {
     if (disposed || !ready || next === view) return;
+    if (next === "vinyl" && !activeVinyl) return;
+    if (next === "shelves" && !["shelves", "vinyl"].includes(view)) vinylReturnView = view;
+    if (activeVinyl && next !== "vinyl") {
+      vinylTween = { mesh: activeVinyl, start: performance.now(), duration: reducedMotion() ? 1 : duration, from: activeVinyl.position.clone(), to: activeVinyl.userData.rest.position, fromRotation: activeVinyl.quaternion.clone(), toRotation: activeVinyl.userData.rest.quaternion, returning: true };
+    }
     if (next === "camera") {
       returnView = view;
       filmStarted = false;
@@ -330,10 +401,23 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
     host.style.cursor = "";
     renderer.domElement.style.pointerEvents = next === "free" ? "auto" : "none";
     const target = keyframes()[next];
-    tween = { start: performance.now(), duration: reducedMotion() ? 1 : duration, from: position.clone(), to: target.position, fromFocal: focal.clone(), toFocal: target.focal, cameraMove: next === "camera" || view === "camera" };
+    tween = { start: performance.now(), duration: reducedMotion() ? 1 : duration, from: position.clone(), to: target.position, fromFocal: focal.clone(), toFocal: target.focal, cameraMove: ["camera", "vinyl", "shelves"].includes(next) || ["camera", "vinyl", "shelves"].includes(view) };
     view = next;
     syncViewVisibility();
     onView(next);
+    vinylState(false);
+  }
+  function openVinyl(index) {
+    if (disposed || !ready || view !== "shelves" || tween || vinylTween || !vinylCovers[index]) return;
+    activeVinyl = vinylCovers[index];
+    vinylGallery.updateMatrixWorld(true);
+    const target = vinylGallery.worldToLocal(vinylLiftPosition());
+    vinylTween = { mesh: activeVinyl, start: performance.now(), duration: reducedMotion() ? 1 : 1600, from: activeVinyl.position.clone(), to: target, fromRotation: activeVinyl.quaternion.clone(), toRotation: new THREE.Quaternion(), returning: false };
+    transition("vinyl");
+  }
+  function closeVinyl() {
+    if (view === "vinyl") transition("shelves", 1300);
+    else if (view === "shelves") transition(vinylReturnView, 1300);
   }
   function closeCamera() { if (view === "camera") transition(returnView, 1300); }
   function sound(name, volume = 0.3, loop = false) {
@@ -363,8 +447,8 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     cssRenderer.setSize(w, h);
     syncViewVisibility();
-    if (view === "camera") {
-      const target = cameraFrame();
+    if (["camera", "shelves", "vinyl"].includes(view)) {
+      const target = keyframes()[view];
       // Retarget from the current rendered pose instead of cutting on rotation.
       tween = { start: performance.now(), duration: reducedMotion() ? 1 : 550, from: position.clone(), to: target.position, fromFocal: focal.clone(), toFocal: target.focal, cameraMove: true };
     } else if (view === "monitor" || view === "desk") {
@@ -396,6 +480,35 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
     plant.position.x += placedBedBounds.max.x + 600 - bounds.min.x;
     plant.position.z += roomBounds.back + 550 - bounds.min.z;
   }
+  function placeFloatingShelves() {
+    if (disposed || floatingShelves || !placedDeskBounds || !placedBedBounds || !bedBaseMaterial || !shelfLabelMaps) return;
+    const gap = placedBedBounds.min.x - placedDeskBounds.max.x;
+    floatingShelves = createFloatingShelves(Math.min(2200, gap - 760), bedBaseMaterial, shelfLabelMaps);
+    const group = floatingShelves.group;
+    group.position.set((placedDeskBounds.max.x + placedBedBounds.min.x) / 2, 1950, roomBounds.back + 255);
+    group.updateMatrixWorld(true);
+    group.traverse(child => {
+      if (!child.material) return;
+      materials.add(child.material);
+      Object.values(child.material).forEach(value => { if (value?.isTexture) textures.add(value); });
+    });
+    scene.add(group);
+  }
+  async function floatingShelfLabels() {
+    const names = ["lakers", "dodgers", "imagination", "myslf"];
+    const maps = await Promise.all(names.map(name => textureLoader.loadAsync(`/room/textures/shelf-props/${name}.svg`)));
+    if (disposed) { maps.forEach(map => map.dispose()); return; }
+    maps.forEach(map => {
+      map.encoding = THREE.sRGBEncoding;
+      map.minFilter = THREE.LinearMipmapLinearFilter;
+      map.magFilter = THREE.LinearFilter;
+      map.generateMipmaps = true;
+      map.anisotropy = 8;
+      textures.add(map);
+    });
+    shelfLabelMaps = Object.fromEntries(names.map((name, index) => [name, maps[index]]));
+    placeFloatingShelves();
+  }
   async function bedroomModel() {
     const { scene: bed } = await gltfLoader.loadAsync("/room/models/Bed/bed_agape.glb");
     if (disposed) {
@@ -411,15 +524,18 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
       if (!child.isMesh) return;
       child.castShadow = child.receiveShadow = true;
       const material = child.material;
-      // Soft indirect fill keeps the supplied fabric texture readable at night.
+      // Keep the supplied weave, with an ivory tint in the brighter room.
       material.emissive.set(0xffffff);
       material.emissiveMap = material.map || null;
-      material.emissiveIntensity = material.map ? .12 : .018;
+      material.emissiveIntensity = material.map ? .05 : .018;
+      if (material.name === "fabric") { material.color.set(0xf4f0e7); material.roughness = 1; }
+      if (material.name === "Wood_polish") bedBaseMaterial = material;
       materials.add(material);
       Object.values(material).forEach(value => { if (value?.isTexture) textures.add(value); });
     });
     scene.add(bed);
     placedBedBounds = new THREE.Box3().setFromObject(bed);
+    placeFloatingShelves();
     placePlant();
     bed.updateWorldMatrix(true, true);
     // Coordinates on the supplied model's actual 38.49 cm nightstand top.
@@ -455,7 +571,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
     poster.name = "Heroes & Villains — Don Toliver comic poster";
     const headboardCenter = bed.getObjectByName("Object_2").localToWorld(new THREE.Vector3(242, 95, 89.85));
     const posterWidth = 2850, posterHeight = posterWidth * 1416 / 1111;
-    poster.position.set(headboardCenter.x, 850 + posterHeight / 2, roomBounds.back + 65);
+    poster.position.set(headboardCenter.x, 850 + posterHeight / 2, roomBounds.back + 100);
     const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x191918, roughness: .65 });
     const artworkMaterial = new THREE.MeshBasicMaterial({ map: posterMap, color: 0xdedbd3 });
     materials.add(frameMaterial);
@@ -483,6 +599,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
       { title: "1989", artist: "Taylor Swift", image: "1989" },
       { title: "petal", artist: "Ariana Grande", image: "petal" },
     ];
+    vinylAlbums = albums;
     const maps = await Promise.all(albums.map(album => textureLoader.loadAsync(`/room/textures/vinyl/${album.image}.jpg`)));
     if (disposed) { maps.forEach(map => map.dispose()); return; }
     maps.forEach(map => {
@@ -494,10 +611,15 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
       textures.add(map);
     });
     const gallery = new THREE.Group();
+    vinylGallery = gallery;
     gallery.name = "Two-row vinyl gallery";
     // Give the monitor some breathing room while keeping both rows together.
     gallery.position.set(-3000, 400, roomBounds.back + 130);
-    const ledgeMaterial = createWoodMaterial("oak");
+    const ledgeMaterial = oakMaterial.clone();
+    ledgeMaterial.map = oakMaterial.map.clone();
+    ledgeMaterial.map.rotation = 0;
+    ledgeMaterial.map.needsUpdate = true;
+    ledgeMaterial.emissiveMap = ledgeMaterial.map;
     const sleeveMaterial = new THREE.MeshStandardMaterial({ color: 0x242522, roughness: 0.95 });
     materials.add(ledgeMaterial);
     textures.add(ledgeMaterial.map);
@@ -509,6 +631,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
       mesh.castShadow = true;
       mesh.receiveShadow = true;
       gallery.add(mesh);
+      vinylTargets.push(mesh);
       return mesh;
     };
     for (let row = 0; row < 2; row++) {
@@ -529,15 +652,21 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
         cover.name = `Vinyl cover — ${album.artist} — ${album.title}`;
         cover.userData.album = album.title;
         cover.userData.artist = album.artist;
+        cover.userData.index = index;
         cover.position.set(x, y, -25);
         cover.rotation.x = -0.055;
+        cover.userData.rest = { position: cover.position.clone(), quaternion: cover.quaternion.clone() };
         cover.castShadow = true;
         // Thin printed sleeves need no self-shadow sampling on the artwork.
         cover.receiveShadow = false;
         gallery.add(cover);
+        vinylTargets.push(cover);
+        vinylCovers.push(cover);
       }
     }
     scene.add(gallery);
+    vinylBounds = new THREE.Box3().setFromObject(gallery);
+    vinylState(false);
   }
   async function bakedModel(model, texture) {
     const [gltf, map] = await Promise.all([gltfLoader.loadAsync(`/room/models/${model}`), textureLoader.loadAsync(`/room/models/${texture}`)]);
@@ -597,6 +726,27 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
       textures.add(map);
     });
     const fitted = fitWorkstation(gltf.scene, screenPosition, width);
+    trashCan = createInteractiveTrashCan();
+    const tabletop = fitted.workstation.children.find(child => child.material?.name === "Wood");
+    materials.add(tabletop.material);
+    Object.values(tabletop.material).forEach(value => { if (value?.isTexture) textures.add(value); });
+    tabletop.material = createWoodMaterial("pale-oak");
+    tabletop.material.name = "Wood";
+    tabletop.material.roughness = 0.8;
+    // Use the fitted top's own coordinates instead of the weathered baked UV atlas.
+    const bounds = tabletop.geometry.boundingBox;
+    const vertices = tabletop.geometry.attributes.position;
+    const uv = new Float32Array(vertices.count * 2);
+    for (let index = 0; index < vertices.count; index++) {
+      uv[index * 2] = (vertices.getX(index) - bounds.min.x) / (bounds.max.x - bounds.min.x);
+      uv[index * 2 + 1] = (vertices.getZ(index) - bounds.min.z) / (bounds.max.z - bounds.min.z);
+    }
+    tabletop.geometry.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+    const deskBounds = new THREE.Box3().setFromObject(tabletop);
+    placedDeskBounds = deskBounds.clone();
+    placeFloatingShelves();
+    // Tuck it inside the left legs, clear of the chair and resting on the floor.
+    trashCan.group.position.set(deskBounds.min.x + 1100, roomBounds.floor, Math.max(roomBounds.back + 720, deskBounds.min.z + 720));
     height = fitted.screenHeight;
     screenRotation.copy(fitted.screenRotation);
     photoCamera = createFujifilmCamera(Object.fromEntries(labels.map((label, index) => [label, maps[index]])));
@@ -605,7 +755,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
     photoCamera.position.set(-1850, 0, -500);
     // Ground the complete body on the fitted tabletop, not a hardcoded height.
     photoCamera.position.y = fitted.surfaceY - new THREE.Box3().setFromObject(photoCamera).min.y;
-    [fitted.workstation, photoCamera].forEach(root => root.traverse(child => {
+    [fitted.workstation, photoCamera, trashCan.group].forEach(root => root.traverse(child => {
       if (!child.isMesh) return;
       const meshMaterials = Array.isArray(child.material) ? child.material : [child.material];
       meshMaterials.forEach(material => {
@@ -616,11 +766,12 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
     if (disposed) {
       fitted.workstation.traverse(child => child.geometry?.dispose());
       photoCamera.traverse(child => child.geometry?.dispose());
+      trashCan.group.traverse(child => child.geometry?.dispose());
       textures.forEach(texture => texture.dispose());
       materials.forEach(material => material.dispose());
       return;
     }
-    scene.add(fitted.workstation, photoCamera);
+    scene.add(fitted.workstation, photoCamera, trashCan.group);
     const cameraBounds = new THREE.Box3().setFromObject(photoCamera);
     cameraRestBounds = cameraBounds.clone();
     cameraRest = { position: photoCamera.position.clone(), quaternion: photoCamera.quaternion.clone() };
@@ -772,11 +923,50 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
     const obstruction = raycaster.intersectObjects(opaque)[0];
     return !obstruction || obstruction.distance >= hit.distance;
   }
+  function trashHit(event) {
+    if (!trashCan || !["room", "desk", "free"].includes(view)) return false;
+    const bounds = host.getBoundingClientRect();
+    const pointer = new THREE.Vector2((event.clientX - bounds.left) / bounds.width * 2 - 1, -(event.clientY - bounds.top) / bounds.height * 2 + 1);
+    scene.updateMatrixWorld();
+    camera.updateMatrixWorld();
+    raycaster.setFromCamera(pointer, camera);
+    const opaque = [];
+    scene.traverseVisible(child => {
+      if (child.isMesh && child.material?.visible && !child.material.transparent && child.material.blending !== THREE.NoBlending) opaque.push(child);
+    });
+    let target = raycaster.intersectObjects(opaque, false)[0]?.object;
+    while (target) {
+      if (target === trashCan.bin) return true;
+      target = target.parent;
+    }
+    return false;
+  }
+  function vinylHit(event) {
+    if (!vinylGallery || !["room", "desk", "free", "shelves", "vinyl"].includes(view)) return null;
+    const bounds = host.getBoundingClientRect();
+    const pointer = new THREE.Vector2((event.clientX - bounds.left) / bounds.width * 2 - 1, -(event.clientY - bounds.top) / bounds.height * 2 + 1);
+    scene.updateMatrixWorld(true);
+    camera.updateMatrixWorld();
+    raycaster.setFromCamera(pointer, camera);
+    const targets = view === "vinyl" ? (activeVinyl ? [activeVinyl] : []) : vinylTargets;
+    const hit = raycaster.intersectObjects(targets, false)[0];
+    if (!hit) return null;
+    const opaque = [];
+    scene.traverseVisible(child => {
+      if (!child.isMesh) return;
+      const meshMaterials = Array.isArray(child.material) ? child.material : [child.material];
+      if (meshMaterials.some(material => material.visible && !material.transparent && material.blending !== THREE.NoBlending)) opaque.push(child);
+    });
+    const obstruction = raycaster.intersectObjects(opaque, false)[0];
+    return !obstruction || obstruction.distance >= hit.distance - 1 ? hit.object : null;
+  }
   let pointerStart, pointerDragged = false;
   const onPointerDown = event => { pointerStart = new THREE.Vector2(event.clientX, event.clientY); pointerDragged = false; };
   const onPointerMove = event => {
     if (pointerStart && pointerStart.distanceTo(new THREE.Vector2(event.clientX, event.clientY)) > 8) pointerDragged = true;
-    host.style.cursor = !tween && (lampHit(event) || (["room", "desk"].includes(view) && cameraHit(event))) ? "pointer" : "";
+    const vinyl = vinylHit(event);
+    const vinylClick = view === "vinyl" ? !vinyl : view === "shelves" || vinyl;
+    host.style.cursor = !tween && !vinylTween && (vinylClick || (trashCan?.canSpill && trashHit(event)) || lampHit(event) || (["room", "desk"].includes(view) && cameraHit(event))) ? "pointer" : "";
   };
   const onPointerUp = () => { pointerStart = null; };
   host.addEventListener("pointerdown", onPointerDown);
@@ -786,6 +976,25 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
   const onClick = event => {
     if (event.target.closest("button, a, input, iframe")) return;
     if (pointerDragged) { pointerDragged = false; return; }
+    if (["shelves", "vinyl"].includes(view)) {
+      const vinyl = vinylHit(event);
+      if (!vinyl) {
+        if (view === "vinyl") closeVinyl();
+        else transition("room", 1300);
+      } else if (view === "shelves" && vinyl.userData.index !== undefined) {
+        openVinyl(vinyl.userData.index);
+      }
+      return;
+    }
+    if (!tween && !vinylTween) {
+      const vinyl = vinylHit(event);
+      if (vinyl) {
+        if (view !== "shelves") transition("shelves");
+        else if (vinyl.userData.index !== undefined) openVinyl(vinyl.userData.index);
+        return;
+      }
+    }
+    if (!tween && trashHit(event)) { trashCan.shake(performance.now(), reducedMotion()); return; }
     if (!tween && lampHit(event)) { toggleLamp(); return; }
     if (!tween && !propTween && ["room", "desk"].includes(view) && cameraHit(event)) { transition("camera"); return; }
     if (view === "desk") {
@@ -805,6 +1014,25 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
     if (disposed) return;
     elapsed += Math.min(now - lastTime, 100);
     lastTime = now;
+    trashCan?.update(now);
+    if (vinylTween) {
+      const t = Math.min((now - vinylTween.start) / vinylTween.duration, 1);
+      const progress = smooth(t);
+      // Pull clear of the ledge before centering the sleeve in front of the lens.
+      const control1 = vinylTween.from.clone().add(new THREE.Vector3(0, 150, 650));
+      const control2 = vinylTween.to.clone().add(new THREE.Vector3(0, 120, vinylTween.returning ? 650 : -250));
+      const inverse = 1 - progress;
+      vinylTween.mesh.position.copy(vinylTween.from).multiplyScalar(inverse ** 3)
+        .addScaledVector(control1, 3 * inverse ** 2 * progress)
+        .addScaledVector(control2, 3 * inverse * progress ** 2)
+        .addScaledVector(vinylTween.to, progress ** 3);
+      vinylTween.mesh.quaternion.slerpQuaternions(vinylTween.fromRotation, vinylTween.toRotation, progress);
+      if (t === 1) {
+        if (vinylTween.returning) activeVinyl = null;
+        vinylTween = null;
+        if (!tween) vinylState(true);
+      }
+    }
     if (lampTween) {
       const t = Math.min((now - lampTween.start) / lampTween.duration, 1);
       lampGlow.value = THREE.MathUtils.lerp(lampTween.from, lampTween.to, smooth(t));
@@ -832,6 +1060,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
       focal.lerpVectors(tween.fromFocal, tween.toFocal, ease);
       if (t === 1) {
         tween = null;
+        if (["shelves", "vinyl"].includes(view) && !vinylTween) vinylState(true);
         if (view === "free") { camera.position.copy(position); controls.target.copy(focal); controls.enabled = true; controls.update(); }
       }
     } else if (view === "room") {
@@ -866,6 +1095,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
   Promise.all([
     workstationModel(),
     bedroomModel(),
+    floatingShelfLabels(),
     vinylWall(),
     bakedModel("World/environment.glb", "World/baked_environment.jpg"),
     bakedModel("Decor/decor.glb", "Decor/baked_decor_modified.jpg"),
@@ -873,6 +1103,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
 
   return {
     start, transition, closeCamera, isCameraView: () => view === "camera", setMuted, toggleLamp,
+    openVinyl, closeVinyl, isVinylView: () => ["shelves", "vinyl"].includes(view),
     toggleFilm() { if (view !== "camera" || !filmStarted) return; if (filmVideo.paused) playFilm(); else filmVideo.pause(); },
     replayFilm() { if (view !== "camera" || !filmStarted) return; filmVideo.currentTime = 0; if (filmVideo.error) filmVideo.load(); playFilm(); },
     toggleFilmMute() { filmVideo.muted = !filmVideo.muted; },
@@ -892,7 +1123,7 @@ export function createRoom(host, { onProgress, onReady, onError, onView, onCamer
       controls.dispose();
       audio.forEach(track => { track.pause(); track.removeAttribute("src"); track.load(); });
       videos.forEach(video => { video.pause(); video.removeAttribute("src"); video.load(); });
-      scene.traverse(child => child.geometry?.dispose());
+      scene.traverse(child => { child.geometry?.dispose(); if (child.isInstancedMesh) child.dispose(); });
       grain.geometry.dispose();
       textures.forEach(texture => texture.dispose());
       materials.forEach(material => material.dispose());

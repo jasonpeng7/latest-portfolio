@@ -16,6 +16,9 @@ const fitSource = (await readFile(new URL("../src/lib/room/fitWorkstation.js", i
 const furnitureSource = (await readFile(new URL("../src/lib/room/furniture.js", import.meta.url), "utf8"))
   .replace(/^import .*;\n/gm, "")
   .replace(/export function /g, "function ");
+const trashSource = (await readFile(new URL("../src/lib/room/trashCan.js", import.meta.url), "utf8"))
+  .replace(/^import .*;\n/gm, "")
+  .replace(/export function /g, "function ");
 const workstationBytes = await readFile(new URL("../public/room/models/Computer/ibm_5150.glb", import.meta.url));
 const worldBytes = await readFile(new URL("../public/room/models/World/environment.glb", import.meta.url));
 const decorBytes = await readFile(new URL("../public/room/models/Decor/decor.glb", import.meta.url));
@@ -23,12 +26,107 @@ const bedBytes = await readFile(new URL("../public/room/models/Bed/bed_agape.glb
 const modelLoader = new GLTFLoader();
 modelLoader.register(() => ({ name: "TEST_TEXTURES", loadTexture: () => Promise.resolve(new three.Texture()) }));
 
+test("the left wastebasket starts over a clean floor, spills its actual contents once, and ends empty", async t => {
+  const { room, advance, scenes, views, screenPoint, click } = await setup();
+  t.after(() => room.destroy());
+  const scene = [...scenes].find(value => value.getObjectByName("Trash can and scattered rubbish"));
+  scene.updateMatrixWorld(true);
+  const arrangement = scene.getObjectByName("Trash can and scattered rubbish");
+  const bin = arrangement.getObjectByName("Under-desk trash can");
+  const tabletop = scene.getObjectByName("IBM 5150 workstation").children.find(child => child.material?.name === "Wood");
+  const deskBounds = new three.Box3().setFromObject(tabletop);
+  const binBounds = new three.Box3().setFromObject(bin);
+  assert.ok(binBounds.max.x < (deskBounds.min.x + deskBounds.max.x) / 2);
+  assert.ok(binBounds.min.x > deskBounds.min.x && binBounds.max.z < deskBounds.max.z);
+  assert.ok(arrangement.position.z < (deskBounds.min.z + deskBounds.max.z) / 2, "the can sits toward the back wall");
+  assert.equal(binBounds.min.y, -2975);
+  const contents = bin.children.filter(child => child.isGroup);
+  assert.equal(contents.length, 6, "rubbish is visible inside the bin");
+  assert.equal(arrangement.children.filter(child => child !== bin).length, 0, "floor initially has no rubbish");
+  const target = arrangement.position.clone().add(new three.Vector3(-200, 650, 350));
+  const currentView = views.at(-1);
+  click(...screenPoint(target.toArray()));
+  advance(200);
+  assert.notEqual(bin.rotation.z, 0, "click starts the shake");
+  assert.equal(views.at(-1), currentView, "click does not zoom into the desk");
+  advance(800);
+  const released = arrangement.children.filter(child => child !== bin);
+  assert.ok(released.length > 0 && released.length < contents.length, "contents leave gradually");
+  assert.ok(released.every(piece => contents.includes(piece)), "the original contents move out without duplicates");
+  advance(3000);
+  assert.equal(bin.rotation.z, 0);
+  assert.equal(bin.position.y, 0);
+  const floorPieces = arrangement.children.filter(child => child !== bin);
+  assert.equal(floorPieces.length, contents.length);
+  assert.equal(bin.children.filter(child => child.isGroup).length, 0, "the bin ends completely empty");
+  assert.ok(contents.every(piece => floorPieces.includes(piece)), "all original rubbish is on the floor");
+  scene.updateMatrixWorld(true);
+  floorPieces.forEach(piece => {
+    const bounds = new three.Box3().setFromObject(piece);
+    assert.ok(Math.abs(bounds.min.y - (-2972)) < 0.01, "rubbish settles just above the floor");
+  });
+  const pieceCount = arrangement.children.length;
+  const settledPositions = floorPieces.map(piece => piece.position.toArray());
+  click(...screenPoint(target.toArray()));
+  advance(200);
+  assert.equal(bin.rotation.z, 0, "a second click does not replay the shake");
+  assert.equal(views.at(-1), currentView, "clicking the empty bin does not change views");
+  advance(3000);
+  assert.equal(arrangement.children.length, pieceCount, "no rubbish is created after the first spill");
+  assert.deepEqual(floorPieces.map(piece => piece.position.toArray()), settledPositions);
+});
+
+test("rubbish moves continuously from the tipping bin to irregular floor positions", () => {
+  const context = vm.createContext({ THREE: three });
+  vm.runInContext(`${furnitureSource}\n${trashSource}\nglobalThis.makeTrash = createInteractiveTrashCan;`, context);
+  const prop = context.makeTrash();
+  prop.group.position.set(-2500, -2975, -800);
+  const contents = prop.bin.children.filter(child => child.isGroup);
+  prop.group.updateMatrixWorld(true);
+  let previous = contents.map(piece => piece.getWorldPosition(new three.Vector3()));
+  prop.shake(0);
+  for (let now = 16; now <= 3600; now += 16) {
+    prop.update(now);
+    prop.group.updateMatrixWorld(true);
+    const current = contents.map(piece => piece.getWorldPosition(new three.Vector3()));
+    current.forEach((position, index) => {
+      assert.ok(position.distanceTo(previous[index]) < 180, "rubbish does not teleport when it leaves the bin or lands");
+    });
+    previous = current;
+  }
+  const xs = contents.map(piece => piece.position.x), zs = contents.map(piece => piece.position.z);
+  assert.ok(Math.max(...xs) - Math.min(...xs) > 600, "landings spread across the floor horizontally");
+  assert.ok(Math.max(...zs) - Math.min(...zs) > 500, "landings have varied distances from the wall");
+  const bearings = contents.map(piece => Math.atan2(piece.position.z, piece.position.x));
+  assert.ok(Math.max(...bearings) - Math.min(...bearings) > 0.3, "rubbish does not form a uniform row");
+  contents.forEach(piece => {
+    assert.equal(piece.parent, prop.group);
+    assert.ok(Math.abs(new three.Box3().setFromObject(piece).min.y + 2972) < 0.01);
+  });
+});
+
+test("reduced motion spills the wastebasket immediately without shaking", async t => {
+  const { room, scenes, views, screenPoint, click } = await setup({ reducedMotion: true });
+  t.after(() => room.destroy());
+  const scene = [...scenes].find(value => value.getObjectByName("Trash can and scattered rubbish"));
+  const arrangement = scene.getObjectByName("Trash can and scattered rubbish");
+  const bin = arrangement.getObjectByName("Under-desk trash can");
+  const target = arrangement.position.clone().add(new three.Vector3(-200, 650, 350));
+  const currentView = views.at(-1);
+  click(...screenPoint(target.toArray()));
+  assert.equal(views.at(-1), currentView);
+  assert.equal(bin.rotation.z, 0);
+  assert.equal(bin.children.filter(child => child.isGroup).length, 0);
+  assert.equal(arrangement.children.filter(piece => piece !== bin && piece.visible).length, 6);
+});
+
 async function setup({ autoDesktopReady = true, holdLayers = false, viewportWidth = 1200, viewportHeight = 800, reducedMotion = false } = {}) {
   let now = 0, frame, camera, cssCamera, cssScene;
   let readyCount = 0;
   const pendingLayers = [];
   const listeners = new Map();
   const views = [];
+  const vinylStates = [];
   let cameraReadyCount = 0;
   const scenes = new Set();
   let orbit;
@@ -104,13 +202,14 @@ async function setup({ autoDesktopReady = true, holdLayers = false, viewportWidt
       load() {}
     },
   });
-  vm.runInContext(`${fitSource}\n${furnitureSource}\n${source}\nglobalThis.createRoom = createRoom;`, context);
+  vm.runInContext(`${fitSource}\n${furnitureSource}\n${trashSource}\n${source}\nglobalThis.createRoom = createRoom;`, context);
   let resolveReady, rejectReady;
   const ready = new Promise((resolve, reject) => { resolveReady = resolve; rejectReady = reject; });
   const room = context.createRoom(host, {
     onProgress() {}, onReady: () => { readyCount++; resolveReady(); }, onError: rejectReady,
     onView(view) { views.push(view); },
     onCameraReady() { cameraReadyCount++; },
+    onVinylState(state) { vinylStates.push(state); },
   });
   if (autoDesktopReady && !holdLayers) await ready;
   else while (!listeners.has("message")) await new Promise(resolve => setImmediate(resolve));
@@ -122,7 +221,7 @@ async function setup({ autoDesktopReady = true, holdLayers = false, viewportWidt
   if (autoDesktopReady && !holdLayers) { room.start(); advance(2500); }
   else advance(0);
   return {
-    room, advance, message, views, scenes, cameraReadyCount: () => cameraReadyCount,
+    room, advance, message, views, scenes, cameraReadyCount: () => cameraReadyCount, vinylState: () => vinylStates.at(-1),
     screenRendering: () => ({ camera, cssCamera, cssScene }),
     ready, readyCount: () => readyCount, completeLayers: () => pendingLayers.splice(0).forEach(complete => complete()),
     sendRawMessage: event => listeners.get("message")(event),
@@ -374,7 +473,7 @@ test("the taller plant stays on the floor to the right of the bed", async t => {
   assert.ok(plantBounds.min.z > -1800 && plantBounds.max.z < bedBounds.max.z, "the plant sits beside the bed toward the back wall");
 });
 
-test("the hanging warm light casts desk shadows in the darker room", async t => {
+test("the warm pendant keeps live shadows in the brighter neutral room", async t => {
   const { room, scenes } = await setup();
   t.after(() => room.destroy());
   const objects = [];
@@ -385,7 +484,7 @@ test("the hanging warm light casts desk shadows in the darker room", async t => 
   assert.ok(light.isSpotLight && light.castShadow);
   assert.ok(light.color.r > light.color.b, "the light has a warm color");
   assert.ok(light.target.position.y < light.position.y, "the light points down toward the desk");
-  assert.ok(objects.find(object => object.isHemisphereLight).intensity < 0.3, "ambient room lighting is subdued");
+  assert.ok(objects.find(object => object.isHemisphereLight).intensity >= 0.5, "neutral daylight fills the modern room");
 });
 
 test("all six wall records fit in Room and remain unobstructed by the workstation in Desk", async t => {
@@ -421,28 +520,147 @@ test("all six wall records fit in Room and remain unobstructed by the workstatio
   }
 });
 
+for (const [viewportWidth, viewportHeight] of [[1440, 900], [390, 844], [844, 390]]) {
+  test(`clicking the vinyl shelf and each sleeve opens a fitted close-up and restores it at ${viewportWidth}×${viewportHeight}`, async t => {
+    const { room, advance, scenes, screenPoint, click, views, vinylState, resize } = await setup({ viewportWidth, viewportHeight });
+    t.after(() => room.destroy());
+    const scene = [...scenes].find(value => value.getObjectByName("Two-row vinyl gallery"));
+    const gallery = scene.getObjectByName("Two-row vinyl gallery");
+    const covers = gallery.children.filter(child => child.userData.album);
+    const rest = covers.map(cover => ({ position: cover.position.clone(), quaternion: cover.quaternion.clone() }));
+    scene.updateMatrixWorld(true);
+    const first = covers[0].getWorldPosition(new three.Vector3());
+    click(...screenPoint(first.toArray()));
+    assert.equal(views.at(-1), "shelves", "clicking a sleeve first zooms into the full collection");
+    advance(1600);
+    assert.equal(vinylState().ready, true);
+    for (const [index, cover] of covers.entries()) {
+      scene.updateMatrixWorld(true);
+      const center = cover.getWorldPosition(new three.Vector3());
+      click(...screenPoint(center.toArray()));
+      assert.equal(views.at(-1), "vinyl", `${cover.userData.album} responds to its own 3D click`);
+      assert.equal(vinylState().selected, index);
+      assert.equal(vinylState().ready, false);
+      advance(800);
+      assert.ok(cover.position.z > rest[index].position.z + 200, "the original sleeve lifts off the ledge");
+      assert.equal(vinylState().ready, false);
+      advance(800);
+      assert.equal(vinylState().ready, true);
+      scene.updateMatrixWorld(true);
+      click(...screenPoint(cover.getWorldPosition(new three.Vector3()).toArray()));
+      assert.equal(views.at(-1), "vinyl", "clicking the enlarged sleeve itself keeps its close-up open");
+      for (const corner of [[-480,-480,12], [-480,480,12], [480,-480,12], [480,480,12]]) {
+        const world = new three.Vector3(...corner).applyMatrix4(cover.matrixWorld);
+        const [x, y] = screenPoint(world.toArray());
+        assert.ok(x >= 0 && x <= viewportWidth && y >= 0 && y < viewportHeight * .75, "the whole cover fits above the controls");
+      }
+      if (index === 0) {
+        resize(viewportHeight, viewportWidth);
+        advance(550);
+        resize(viewportWidth, viewportHeight);
+        advance(550);
+      }
+      covers.forEach((other, otherIndex) => {
+        if (other !== cover) assert.ok(other.position.distanceTo(rest[otherIndex].position) < 0.001, "other sleeves stay on the shelf");
+      });
+      click(0, viewportHeight - 1);
+      advance(1300);
+      assert.equal(views.at(-1), "shelves");
+      assert.ok(cover.position.distanceTo(rest[index].position) < 0.001);
+      assert.ok(cover.quaternion.angleTo(rest[index].quaternion) < 0.001);
+      assert.equal(vinylState().selected, null);
+    }
+    click(0, viewportHeight - 1);
+    advance(1300);
+    assert.equal(views.at(-1), "room");
+    room.transition("desk");
+    advance(1600);
+    room.transition("shelves");
+    advance(1600);
+    click(0, viewportHeight - 1);
+    advance(1300);
+    assert.equal(views.at(-1), "room", "click-away leaves the gallery for Room even when entered from Desk");
+  });
+}
+
+test("leaving during a vinyl lift returns the sleeve without stranding it", async t => {
+  const { room, advance, scenes, views, click, pointerDown, move, pointerUp } = await setup();
+  t.after(() => room.destroy());
+  const scene = [...scenes].find(value => value.getObjectByName("Two-row vinyl gallery"));
+  const cover = scene.getObjectByName("Two-row vinyl gallery").children.find(child => child.userData.album);
+  const rest = cover.position.clone();
+  room.transition("shelves");
+  advance(1600);
+  room.openVinyl(0);
+  advance(500);
+  room.transition("desk");
+  advance(1600);
+  assert.equal(views.at(-1), "desk");
+  assert.ok(cover.position.distanceTo(rest) < 0.001);
+  room.transition("shelves");
+  advance(1600);
+  room.openVinyl(0);
+  advance(1600);
+  assert.equal(views.at(-1), "vinyl", "the record can be selected again after cancellation");
+  pointerDown(10, 700);
+  move(50, 750);
+  pointerUp();
+  click(50, 750);
+  assert.equal(views.at(-1), "vinyl", "a drag does not trigger click-away");
+  room.closeVinyl();
+  advance(1300);
+  room.openVinyl(0);
+  advance(500);
+  click(0, 799);
+  assert.equal(views.at(-1), "shelves", "click-away can cancel an unfinished lift");
+  advance(1300);
+  assert.ok(cover.position.distanceTo(rest) < 0.001, "cancelling by click-away restores the exact shelf position");
+});
+
+test("reduced motion opens and returns a vinyl sleeve without a long lift", async t => {
+  const { room, advance, scenes, views, vinylState } = await setup({ reducedMotion: true });
+  t.after(() => room.destroy());
+  const gallery = [...scenes].map(scene => scene.getObjectByName("Two-row vinyl gallery")).find(Boolean);
+  const cover = gallery.children.find(child => child.userData.index === 4);
+  const rest = cover.position.clone();
+  room.transition("shelves");
+  advance(1);
+  room.openVinyl(4);
+  advance(1);
+  assert.equal(views.at(-1), "vinyl");
+  assert.equal(vinylState().ready, true);
+  assert.equal(vinylState().selected, 4);
+  assert.ok(cover.position.z > rest.z + 2000);
+  room.closeVinyl();
+  advance(1);
+  assert.equal(views.at(-1), "shelves");
+  assert.ok(cover.position.distanceTo(rest) < 0.001);
+});
+
 test("wood textures upload as opaque sRGB RGBA instead of unsupported RGB", async t => {
   const { room, scenes } = await setup();
   t.after(() => room.destroy());
   const textures = new Set();
-  let oak;
+  let oak, slatMaterial;
   for (const scene of scenes) scene.traverse(object => {
     const materials = Array.isArray(object.material) ? object.material : [object.material];
     for (const material of materials) {
       if (material?.map?.isDataTexture && material.map.encoding === three.sRGBEncoding) textures.add(material.map);
     }
     if (object.name === "Vinyl ledge 1") oak = object.material.map;
+    if (object.name === "Oak wall battens") slatMaterial = object.material;
   });
   assert.ok(oak);
   for (const map of textures) {
+    assert.ok(map.version > 0, "procedural textures, including cloned ledge maps, are queued for GPU upload");
     assert.equal(map.format, three.RGBAFormat, "WebGL2 supports sRGB RGBA8 uploads");
     assert.equal(map.image.data.length, map.image.width * map.image.height * 4, "each texel has all four channels");
   }
   for (let index = 0; index < oak.image.data.length; index += 4) {
-    assert.ok(oak.image.data[index] > 150, "oak is a light wood finish");
     assert.ok(oak.image.data[index] > oak.image.data[index + 1] && oak.image.data[index + 1] > oak.image.data[index + 2]);
     assert.equal(oak.image.data[index + 3], 255);
   }
+  assert.deepEqual(oak.image.data, slatMaterial.map.image.data, "vinyl ledges use the slatted wall's smoked-oak color");
 });
 
 test("the camera rests on the desk's left with its lens and Fujifilm badge visible", async t => {
@@ -515,19 +733,25 @@ test("the original workstation anchors the wall, bed, shelves, and lighting", as
   const bed = new three.Box3().setFromObject(objects.find(object => object.name === "Bed Agape with integrated nightstand"));
   assert.ok(Math.abs(bed.min.z - wall.position.z - 300) < .001, "the bed keeps its clearance from the moved wall");
   assert.equal(objects.find(object => object.name === "Two-row vinyl gallery").position.z - wall.position.z, 130);
-  assert.equal(objects.find(object => object.name === "Heroes & Villains — Don Toliver comic poster").position.z - wall.position.z, 65);
+  const poster = objects.find(object => object.name === "Heroes & Villains — Don Toliver comic poster");
+  const slats = objects.find(object => object.name === "Oak wall battens");
+  const slatTransform = new three.Matrix4();
+  slats.getMatrixAt(0, slatTransform);
+  slats.geometry.computeBoundingBox();
+  const slatFront = slats.geometry.boundingBox.max.z + new three.Vector3().setFromMatrixPosition(slatTransform).z;
+  assert.ok(new three.Box3().setFromObject(poster).min.z > slatFront, "the poster frame clears the new oak battens");
   const pendant = objects.find(object => object.name === "Pendant warm light");
   assert.equal(pendant.position.z, 250, "desk lighting returns to its original position");
 });
 
-test("four warm plaster walls meet the driftwood floor at square white baseboards", async t => {
+test("four warm plaster walls meet the oak floor at square white baseboards", async t => {
   const { room, scenes } = await setup();
   t.after(() => room.destroy());
   const objects = [];
   for (const scene of scenes) scene.traverse(child => objects.push(child));
   const wall = objects.find(object => object.name === "Vinyl gallery wall");
   const floor = objects.find(object => object.name === "Live shadow floor");
-  assert.notEqual(wall.material, floor.material, "wood is confined to the horizontal floor");
+  assert.notEqual(wall.material, floor.material, "the oak floor and plaster walls keep distinct finishes");
   const walls = objects.filter(object => object.material?.name === "Warm off-white plaster");
   assert.equal(walls.length,4);
   const wallBounds = new three.Box3().setFromObject(wall);
@@ -540,6 +764,15 @@ test("four warm plaster walls meet the driftwood floor at square white baseboard
     const bounds = new three.Box3().setFromObject(trim);
     assert.ok(Math.abs(bounds.min.y - floorBounds.min.y) < 1,"baseboards sit directly on the floor");
     assert.ok(bounds.max.y - bounds.min.y > 200);
+  }
+  const feature = objects.find(object => object.name === "Vertical oak feature wall");
+  const panel = feature.children.find(object => !object.isInstancedMesh);
+  const panelBounds = new three.Box3().setFromObject(panel);
+  const backTrim = objects.find(object => object.name === "Vinyl gallery wall baseboard");
+  assert.equal(backTrim.children.length, 4, "both baseboard profiles are split around the feature wall");
+  for (const profile of backTrim.children) {
+    const bounds = new three.Box3().setFromObject(profile);
+    assert.ok(bounds.max.x <= panelBounds.min.x || bounds.min.x >= panelBounds.max.x, "no baseboard overlaps the oak panel");
   }
   assert.ok(!objects.find(object => object.name === "Background").visible);
 });

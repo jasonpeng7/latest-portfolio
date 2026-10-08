@@ -66,7 +66,7 @@ export function fitWorkstation(source, screenPosition, screenWidth) {
   workstation.updateMatrixWorld(true);
   const fittedDesk = new THREE.Box3().setFromObject(tabletop);
   const legHeight = fittedDesk.min.y - (-2980);
-  const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x24282a, roughness: 0.7, metalness: 0.35 });
+  const frameMaterial = new THREE.MeshStandardMaterial({ color: new THREE.Color(0x24282a).convertSRGBToLinear(), roughness: 0.7, metalness: 0.35 });
   for (const x of [fittedDesk.min.x + 240, fittedDesk.max.x - 240]) {
     for (const z of [fittedDesk.min.z + 220, fittedDesk.max.z - 220]) {
       const leg = new THREE.Mesh(new THREE.BoxGeometry(100 / scale, legHeight / scale, 100 / scale), frameMaterial);

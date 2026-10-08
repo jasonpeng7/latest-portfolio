@@ -4,10 +4,20 @@ A 3D office with a fully local Windows 95-style portfolio inside the CRT monitor
 The white, centered Start page appears immediately and preloads the room and
 embedded desktop behind a progress bar. Start becomes available only when both
 are ready; the separate BIOS/loading page and its delayed transition are removed.
-The workstation uses the supplied IBM 5150 GLB with its original textured materials,
-a larger wooden desk, steel frame, and a slim matte-black LED ring pendant in a darker room.
+The workstation uses the supplied IBM 5150 GLB with its original computer textures,
+a pale oak desk, black steel frame, and a slim matte-black LED ring pendant.
+The room uses a modern warm-neutral palette inspired by the supplied interior:
+creamy plaster, natural oak, ivory textiles, and crisp charcoal accents. Vertical
+oak battens form the feature wall behind the shelves and bed; a woven ivory rug
+softens the chair area. Neutral daylight fills the room, with warm local lamps.
 The taller plant stays anchored to the floor; the left white brochure is removed.
 The floor uses live shadows from the pendant instead of the old baked table shadow.
+A tapered charcoal metal wastebasket sits near the back wall beneath the desk's left side.
+Crumpled paper, a used cup, and a crushed can fill it; the floor starts clean.
+The first click in Room, Desk, or Free Camera shakes it and spills all its contents.
+The can tips while its actual contents slide over the rim, fall under gravity,
+and tumble, bounce, and settle at varied spots on the floor, leaving
+the bin empty. It runs once per page load; reduced motion empties it immediately.
 A custom all-black [Fujifilm X-T30 II](https://www.fujifilm-x.com/global/products/cameras/x-t30-ii/)
 with a [Tamron 17–70mm](https://www.tamron.com/global/consumer/lenses/b070/spec.html)
 sits on the desk's left side, its lens angled left and its front branding visible.
@@ -15,14 +25,23 @@ Mobile Computer view fits the tilted screen with padding and updates on resize,
 while the desktop zoom distance stays the same. The chair is hidden in mobile
 Computer view so the wider framing cannot place it in front of the screen;
 it returns in Room and Desk views.
-The driftwood floor has muted grey-brown planks with subtle grain and staggered
+The natural oak floor has long pale planks with subtle grain and staggered
 joints. Four warm off-white plaster walls meet it at square edges, trimmed with
 white painted baseboards and a small top cap. The floor stays flat up to the walls.
 The enclosure contains the startup approach and the existing automatic camera
 paths. Manual orbiting can turn through 360 degrees; its distance shortens near a
 wall to keep the viewpoint inside with clearance, and zoom remains bounded.
-Two minimal light oak wood ledges behind the desk hold six textured vinyl sleeves;
+Two minimal smoked-oak ledges, matching the slatted wall, hold six textured vinyl sleeves;
 they sit to the monitor's left so both rows are visible from Room and Desk.
+Two staggered floating shelves occupy the rear-wall gap between the desk and bed,
+using the bed frame's dark-brown material. The unlit top shelf holds Lakers and
+Dodgers baseball caps; the lower shelf holds LV Imagination and YSL MYSLF bottles.
+Click either ledge or a sleeve to zoom into the collection, then click a record
+to lift that sleeve off its ledge into a close-up, without an instructional popup.
+VINYL also supports keyboard navigation. BACK or Escape returns the sleeve to its exact
+spot on the shelf; a second BACK returns to the previous room view.
+Clicking outside a close-up returns to all records; clicking outside the collection
+returns to Room. The baseboard stops at both edges of the slatted feature wall.
 The covers are HEROES & VILLAINS, Graduation, Souled Out, Take Care, 1989 (original
 2014 cover), and petal. Cover source links are in `public/room/textures/vinyl/SOURCES.md`.
 The record shelves stay attached to the rear wall. Each record

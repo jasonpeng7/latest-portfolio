@@ -1,5 +1,212 @@
 import * as THREE from "three";
 
+export function createWovenMaterial() {
+  const size = 128;
+  const pixels = new Uint8Array(size * size * 4);
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const warp = Math.sin(x * Math.PI / 4), weft = Math.sin(y * Math.PI / 4);
+      const fibre = 0.95 + 0.025 * warp + 0.025 * weft + 0.012 * Math.sin(x * 13 + y * 17);
+      const offset = (y * size + x) * 4;
+      pixels[offset] = 227 * fibre;
+      pixels[offset + 1] = 219 * fibre;
+      pixels[offset + 2] = 204 * fibre;
+      pixels[offset + 3] = 255;
+    }
+  }
+  const map = new THREE.DataTexture(pixels, size, size, THREE.RGBAFormat);
+  map.name = "Ivory woven fibres";
+  map.encoding = THREE.sRGBEncoding;
+  map.wrapS = map.wrapT = THREE.RepeatWrapping;
+  map.repeat.set(24, 16);
+  map.magFilter = THREE.LinearFilter;
+  map.minFilter = THREE.LinearMipmapLinearFilter;
+  map.generateMipmaps = true;
+  map.anisotropy = 8;
+  map.needsUpdate = true;
+  const material = new THREE.MeshStandardMaterial({ color: 0xffffff, map, roughness: 1, metalness: 0, emissive: 0xe3dbcc, emissiveMap: map, emissiveIntensity: 0.04, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -8 });
+  material.name = "Ivory woven textile";
+  return material;
+}
+
+export function createFloatingShelves(width = 1940, bedMaterial, labels = {}) {
+  const group = new THREE.Group();
+  group.name = "Staggered floating shelves";
+  const finish = bedMaterial?.clone() || new THREE.MeshStandardMaterial({ color: new THREE.Color().setRGB(0.03884, 0.029177, 0.022409), roughness: 0.58, metalness: 0.19 });
+  finish.name = "Bed-matched floating shelf finish";
+  const add = (parent, name, geometry, material, x = 0, y = 0, z = 0) => {
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.name = name;
+    mesh.position.set(x, y, z);
+    mesh.castShadow = mesh.receiveShadow = true;
+    parent.add(mesh);
+    return mesh;
+  };
+  const decal = (parent, name, map, width, height, y, z, tilt = 0) => {
+    if (!map) return;
+    const material = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, side: THREE.DoubleSide });
+    const mesh = add(parent, name, new THREE.PlaneGeometry(width, height), material, 0, y, z);
+    mesh.rotation.x = tilt;
+    mesh.castShadow = mesh.receiveShadow = false;
+  };
+  const shelves = [[-260, 650], [260, -650]].map(([x, y], index) => {
+    const shelf = new THREE.Group();
+    shelf.name = `Floating shelf ${index + 1}`;
+    shelf.position.set(x, y, 0);
+    group.add(shelf);
+    add(shelf, "Floating shelf slab", new THREE.BoxGeometry(width, 130, 500), finish);
+    return shelf;
+  });
+  const cap = (team, x, rotation, color, brimColor, map) => {
+    const hat = new THREE.Group();
+    hat.name = `${team} baseball cap`;
+    hat.position.set(x, 65, -100);
+    hat.rotation.y = rotation;
+    shelves[0].add(hat);
+    const fabric = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).convertSRGBToLinear(), roughness: 0.95, side: THREE.DoubleSide });
+    const brimFabric = new THREE.MeshStandardMaterial({ color: new THREE.Color(brimColor).convertSRGBToLinear(), roughness: 0.9 });
+    const seamMaterial = fabric.clone();
+    seamMaterial.color.multiplyScalar(1.25);
+    const crown = add(hat, "Six-panel cap crown", new THREE.SphereGeometry(230, 40, 24, 0, Math.PI * 2, 0, Math.PI / 2), fabric, 0, 18);
+    crown.scale.set(1, 0.8, 0.95);
+    const visor = new THREE.Shape();
+    visor.moveTo(-170, 125);
+    visor.bezierCurveTo(-245, 210, -280, 355, -190, 398);
+    visor.quadraticCurveTo(0, 465, 190, 398);
+    visor.bezierCurveTo(280, 355, 245, 210, 170, 125);
+    visor.quadraticCurveTo(0, 182, -170, 125);
+    const brim = new THREE.ExtrudeGeometry(visor, { depth: 10, bevelEnabled: true, bevelThickness: 3, bevelSize: 3, bevelSegments: 3, steps: 1, curveSegments: 24 });
+    brim.rotateX(Math.PI / 2);
+    add(hat, "Curved cap visor", brim, brimFabric, 0, 14);
+    const band = add(hat, "Cap sweatband", new THREE.TorusGeometry(220, 9, 8, 48), fabric, 0, 18);
+    band.rotation.x = Math.PI / 2;
+    for (let panel = 0; panel < 6; panel++) {
+      const phi = panel * Math.PI / 3;
+      const points = Array.from({ length: 18 }, (_, index) => {
+        const theta = index / 17 * Math.PI / 2;
+        return new THREE.Vector3(Math.sin(phi) * 231 * Math.sin(theta), 18 + 185 * Math.cos(theta), Math.cos(phi) * 220 * Math.sin(theta));
+      });
+      add(hat, "Cap panel stitching", new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 24, 1.5, 4, false), seamMaterial);
+    }
+    add(hat, "Cap top button", new THREE.SphereGeometry(13, 16, 8), fabric, 0, 208).scale.y = 0.45;
+    decal(hat, `${team} embroidered logo`, map, 175, 112, 127, 199, -0.5);
+  };
+  cap("Los Angeles Lakers", -width * 0.21, 0.12, 0x542583, 0xf4bb35, labels.lakers);
+  cap("Los Angeles Dodgers", width * 0.21, -0.12, 0x16459a, 0x16459a, labels.dodgers);
+  const black = new THREE.MeshStandardMaterial({ color: 0x111514, roughness: 0.22, metalness: 0.25 });
+  const silver = new THREE.MeshStandardMaterial({ color: 0x9ea8a8, roughness: 0.28, metalness: 0.75 });
+  const imagination = new THREE.Group();
+  imagination.name = "Louis Vuitton Imagination cologne";
+  imagination.position.set(-width * 0.2, 65, 0);
+  shelves[1].add(imagination);
+  const glass = new THREE.MeshStandardMaterial({ color: 0x98cbd4, roughness: 0.18, metalness: 0.1, transparent: true, opacity: 0.8, depthWrite: false });
+  const liquid = new THREE.MeshStandardMaterial({ color: 0x7eb9c6, roughness: 0.25, metalness: 0.1 });
+  add(imagination, "Imagination pale-blue glass", new THREE.CylinderGeometry(115, 115, 320, 48), glass, 0, 170);
+  add(imagination, "Imagination blue fragrance", new THREE.CylinderGeometry(102, 102, 245, 48), liquid, 0, 140);
+  add(imagination, "Imagination rounded shoulder", new THREE.CylinderGeometry(58, 115, 58, 48), glass, 0, 359);
+  add(imagination, "Imagination neck", new THREE.CylinderGeometry(44, 44, 35, 32), silver, 0, 399);
+  add(imagination, "Imagination black cap", new THREE.CylinderGeometry(76, 76, 85, 48), black, 0, 455);
+  decal(imagination, "Imagination bottle lettering", labels.imagination, 195, 160, 215, 116);
+  const myslf = new THREE.Group();
+  myslf.name = "YSL MYSLF cologne";
+  myslf.position.set(width * 0.2, 65, 0);
+  shelves[1].add(myslf);
+  const roundedBox = (w, h, d, radius = 10) => {
+    const shape = new THREE.Shape();
+    const x = -w / 2, y = -h / 2;
+    shape.moveTo(x + radius, y);
+    shape.lineTo(x + w - radius, y);
+    shape.quadraticCurveTo(x + w, y, x + w, y + radius);
+    shape.lineTo(x + w, y + h - radius);
+    shape.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+    shape.lineTo(x + radius, y + h);
+    shape.quadraticCurveTo(x, y + h, x, y + h - radius);
+    shape.lineTo(x, y + radius);
+    shape.quadraticCurveTo(x, y, x + radius, y);
+    const geometry = new THREE.ExtrudeGeometry(shape, { depth: d - 8, bevelEnabled: true, bevelThickness: 4, bevelSize: 4, bevelSegments: 4, steps: 1, curveSegments: 12 });
+    geometry.translate(0, 0, -d / 2 + 4);
+    return geometry;
+  };
+  add(myslf, "MYSLF glossy black bottle", roundedBox(200, 370, 115), black, 0, 189);
+  add(myslf, "MYSLF neck collar", new THREE.CylinderGeometry(40, 40, 20, 24), silver, 0, 384);
+  add(myslf, "MYSLF square black cap", roundedBox(140, 95, 110, 5), black, 0, 442);
+  decal(myslf, "MYSLF silver Cassandre lettering", labels.myslf, 148, 255, 219, 59);
+  return { group, width };
+}
+
+export function createTrashCan() {
+  const trashCan = new THREE.Group();
+  trashCan.name = "Under-desk trash can";
+  const metal = new THREE.MeshStandardMaterial({ color: new THREE.Color(0x44494b).convertSRGBToLinear(), roughness: 0.65, metalness: 0.45 });
+  const interior = new THREE.MeshStandardMaterial({ color: 0x262a2b, roughness: 0.85, metalness: 0.15 });
+  // Revolve a closed wall profile to leave a real opening and a recessed bottom.
+  const profile = [
+    [0, 0], [410, 0], [430, 35], [540, 1250], [520, 1250],
+    [410, 55], [0, 55],
+  ].map(([radius, y]) => new THREE.Vector2(radius, y));
+  const body = new THREE.Mesh(new THREE.LatheGeometry(profile, 64), metal);
+  body.name = "Tapered metal wastebasket";
+  body.castShadow = body.receiveShadow = true;
+  trashCan.add(body);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(530, 22, 12, 64), metal);
+  rim.name = "Rolled trash can rim";
+  rim.rotation.x = Math.PI / 2;
+  rim.position.y = 1250;
+  rim.castShadow = rim.receiveShadow = true;
+  trashCan.add(rim);
+  const bottom = new THREE.Mesh(new THREE.CircleGeometry(410, 64), interior);
+  bottom.name = "Trash can interior bottom";
+  bottom.rotation.x = -Math.PI / 2;
+  bottom.position.y = 56;
+  bottom.receiveShadow = true;
+  trashCan.add(bottom);
+  return trashCan;
+}
+
+export function createRubbish(kind = "paper", seed = 0) {
+  const rubbish = new THREE.Group();
+  rubbish.name = kind === "paper" ? "Crumpled paper" : kind === "cup" ? "Discarded paper cup" : "Crushed drink can";
+  const add = (geometry, material, y = 0) => {
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.y = y;
+    mesh.castShadow = mesh.receiveShadow = true;
+    rubbish.add(mesh);
+    return mesh;
+  };
+  if (kind === "paper") {
+    const geometry = new THREE.IcosahedronGeometry(140, 1);
+    const vertices = geometry.attributes.position;
+    for (let index = 0; index < vertices.count; index++) {
+      const x = vertices.getX(index), y = vertices.getY(index), z = vertices.getZ(index);
+      const fold = 0.78 + Math.sin(x * 0.09 + y * 0.06 + z * 0.08 + seed * 7) * 0.22;
+      vertices.setXYZ(index, x * fold, y * fold * 0.8, z * fold);
+    }
+    geometry.computeVertexNormals();
+    add(geometry, new THREE.MeshStandardMaterial({ color: seed % 2 ? 0xe4d3b2 : 0xf1ece1, roughness: 1, flatShading: true }));
+  } else if (kind === "cup") {
+    const paper = new THREE.MeshStandardMaterial({ color: 0xd7ba8e, roughness: 0.95, side: THREE.DoubleSide });
+    add(new THREE.CylinderGeometry(95, 65, 235, 24, 1, true), paper);
+    add(new THREE.CylinderGeometry(65, 65, 8, 24), paper, -113);
+    const rim = add(new THREE.TorusGeometry(95, 7, 8, 24), paper, 117.5);
+    rim.rotation.x = Math.PI / 2;
+    const sleeve = new THREE.MeshStandardMaterial({ color: 0x647457, roughness: 1 });
+    add(new THREE.CylinderGeometry(84, 76, 65, 24, 1, true), sleeve, -5);
+  } else {
+    const aluminum = new THREE.MeshStandardMaterial({ color: 0x809298, roughness: 0.48, metalness: 0.65, flatShading: true });
+    const body = add(new THREE.CylinderGeometry(80, 85, 180, 12, 3), aluminum);
+    const vertices = body.geometry.attributes.position;
+    for (let index = 0; index < vertices.count; index++) {
+      const y = vertices.getY(index);
+      const crush = 1 - 0.35 * Math.max(0, 1 - Math.abs(y) / 90);
+      vertices.setX(index, vertices.getX(index) * crush);
+      vertices.setZ(index, vertices.getZ(index) * 0.75);
+    }
+    body.geometry.computeVertexNormals();
+    add(new THREE.CylinderGeometry(74, 74, 5, 24), aluminum, 91);
+  }
+  return rubbish;
+}
+
 export function createNightstandLamp() {
   const lamp = new THREE.Group();
   lamp.name = "Nightstand lamp";
@@ -25,8 +232,8 @@ export function createNightstandLamp() {
 }
 
 export function createWoodMaterial(finish = "walnut") {
-  const isOak = finish === "oak";
-  const color = isOak ? [218, 174, 119] : [128, 79, 45];
+  const isOak = ["oak", "pale-oak", "smoked-oak"].includes(finish);
+  const color = finish === "pale-oak" ? [205, 192, 169] : finish === "smoked-oak" ? [143, 115, 84] : isOak ? [218, 174, 119] : [128, 79, 45];
   const width = 512, height = 128;
   // WebGL2 requires RGBA8 for sRGB textures; RGB uploads render black on it.
   const pixels = new Uint8Array(width * height * 4);
@@ -54,10 +261,10 @@ export function createWoodMaterial(finish = "walnut") {
   map.needsUpdate = true;
   const material = new THREE.MeshStandardMaterial({ map, roughness: 0.7, metalness: 0 });
   if (isOak) {
-    // A little indirect fill keeps the oak grain visible in the dim room.
+    // Gentle indirect fill retains the grain on small shelves and wall details.
     material.emissive.set(0xffffff);
     material.emissiveMap = map;
-    material.emissiveIntensity = 0.12;
+    material.emissiveIntensity = finish === "smoked-oak" ? 0.025 : 0.06;
   }
   material.name = isOak ? "Light warm oak wood" : "Warm walnut wood";
   return material;

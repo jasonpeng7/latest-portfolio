@@ -73,6 +73,7 @@
 .room-css,.room-webgl { position:absolute; inset:0; }
 /* CSS3DObject enables input on the screen; its full-room wrapper must pass clicks through. */
 .room-css { pointer-events:none; }
+.room-page:is([data-view=shelves],[data-view=vinyl]) .room-css iframe { pointer-events:none; }
 .room-webgl { pointer-events:none; }
 .room-page #ui { position:absolute; inset:0; display:flex; overflow:hidden; box-sizing:border-box; z-index:2; pointer-events:none; }
 .room-page #ui-app { width:100%; height:100%; position:relative; display:flex; align-items:center; justify-content:center; box-sizing:border-box; }
@@ -147,17 +148,26 @@
 .camera-playback-buttons button:hover:not(:disabled),.camera-playback-buttons button[aria-pressed=true] { background:#dce8de; color:#17201a; }
 .camera-playback-buttons button:focus-visible { outline:2px solid #fff; outline-offset:2px; }
 .camera-playback-buttons button:disabled { opacity:.45; cursor:wait; }
+.vinyl-inspection-controls { position:absolute; bottom:92px; right:40px; z-index:5; display:flex; align-items:center; gap:16px; color:#e5dfd3; font:11px/1.5 monospace; pointer-events:none; }
+.vinyl-inspection-controls p { margin:0; text-align:right; text-shadow:0 1px 4px #000; }
+.vinyl-inspection-controls p span { display:block; opacity:.8; }
+.vinyl-inspection-controls button { min-height:44px; padding:8px 14px; border:1px solid #777; border-radius:0; background:#000c; color:#fff; font:11px monospace; cursor:pointer; pointer-events:auto; }
+.vinyl-inspection-controls button:hover { background:#e5dfd3; color:#111; }
+.vinyl-inspection-controls button:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+.room-page[data-view=vinyl] #ui-interactive { visibility:hidden; pointer-events:none; }
 .room-page .camera-playback-controls p { margin:8px 4px 0; color:#e4ebe4; font:11px/1.5 monospace; }
 @media(max-width:699px) {
  .room-navigation { left:16px; right:16px; justify-content:flex-end; gap:3px; }
  .room-navigation button,.room-navigation a { min-height:44px; display:grid; place-items:center; padding:7px 8px; }
  .room-camera-hint { bottom:80px; right:16px; font-size:10px; }
  .camera-playback-controls { bottom:88px; }
+ .vinyl-inspection-controls { bottom:88px; right:16px; }
  .camera-playback-buttons button { padding:8px 10px; font-size:10px; }
 }
 @media(max-height:500px) {
  .camera-playback-controls { left:16px; bottom:20px; transform:none; }
  .room-fallback { bottom:116px; }
  .room-camera-hint { bottom:76px; }
+ .vinyl-inspection-controls { bottom:76px; right:16px; }
 }
 @media(max-width:768px),(pointer:coarse) { .room-fallback { display:none; } }
